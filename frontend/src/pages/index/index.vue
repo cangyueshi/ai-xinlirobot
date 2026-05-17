@@ -47,6 +47,12 @@
         <text class="menu-arrow">›</text>
       </view>
 
+      <view class="menu-item" v-if="isCounselor" @click="goPage('/pages/counselor/dashboard')">
+        <text class="menu-icon">🏠</text>
+        <text class="menu-text">工作台</text>
+        <text class="menu-arrow">›</text>
+      </view>
+
       <view class="menu-item" v-if="isCounselor" @click="goPage('/pages/availability/manage')">
         <text class="menu-icon">⏰</text>
         <text class="menu-text">管理可预约时间</text>
@@ -56,6 +62,12 @@
       <view class="menu-item" v-if="isCounselor" @click="goPage('/pages/appointments/list')">
         <text class="menu-icon">📊</text>
         <text class="menu-text">来访者预约</text>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <view class="menu-item" v-if="isCounselor" @click="goPage('/pages/counselor/visitors')">
+        <text class="menu-icon">👥</text>
+        <text class="menu-text">来访者管理</text>
         <text class="menu-arrow">›</text>
       </view>
 

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, Base, SessionLocal
 from models import user, appointment, chat, assessment
-from routers import auth, appointments, chat as chat_router, assessments
+from routers import auth, appointments, chat as chat_router, assessments, counselor
 from utils.seed_scales import seed_scales
 
 Base.metadata.create_all(bind=engine)
@@ -26,6 +26,7 @@ app.include_router(auth.router)
 app.include_router(appointments.router)
 app.include_router(chat_router.router)
 app.include_router(assessments.router)
+app.include_router(counselor.router)
 
 
 @app.get("/api/health")

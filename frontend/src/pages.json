@@ -14,7 +14,10 @@
     { "path": "pages/assessment/list", "style": { "navigationBarTitleText": "心理测评" } },
     { "path": "pages/assessment/answer", "style": { "navigationBarTitleText": "答题" } },
     { "path": "pages/assessment/result", "style": { "navigationBarTitleText": "测评结果" } },
-    { "path": "pages/assessment/history", "style": { "navigationBarTitleText": "测评记录" } }
+    { "path": "pages/assessment/history", "style": { "navigationBarTitleText": "测评记录" } },
+    { "path": "pages/counselor/dashboard", "style": { "navigationBarTitleText": "工作台" } },
+    { "path": "pages/counselor/visitors", "style": { "navigationBarTitleText": "来访者管理" } },
+    { "path": "pages/counselor/visitorDetail", "style": { "navigationBarTitleText": "来访者详情" } }
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",
