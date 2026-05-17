@@ -15,9 +15,17 @@ class UserLogin(BaseModel):
     password: str
 
 
+class WechatLogin(BaseModel):
+    openid: str
+    display_name: str = Field(min_length=1, max_length=100)
+    role: UserRole = UserRole.VISITOR
+    phone: str | None = None
+
+
 class UserResponse(BaseModel):
     id: int
-    username: str
+    username: str | None = None
+    openid: str | None = None
     display_name: str
     role: UserRole
     phone: str | None = None

@@ -2,21 +2,16 @@ import { request } from "@/utils/request";
 
 export interface UserInfo {
   id: number;
-  username: string;
+  username: string | null;
+  openid: string | null;
   display_name: string;
   role: "admin" | "counselor" | "visitor";
   phone: string | null;
   is_active: boolean;
 }
 
-export interface LoginParams {
-  username: string;
-  password: string;
-}
-
-export interface RegisterParams {
-  username: string;
-  password: string;
+export interface WechatLoginParams {
+  openid: string;
   display_name: string;
   role: string;
   phone?: string;
@@ -28,15 +23,8 @@ export interface AuthResponse {
   user: UserInfo;
 }
 
-export function login(params: LoginParams): Promise<AuthResponse> {
-  return request<AuthResponse>("/api/auth/login", {
-    method: "POST",
-    data: params,
-  });
-}
-
-export function register(params: RegisterParams): Promise<AuthResponse> {
-  return request<AuthResponse>("/api/auth/register", {
+export function wechatLogin(params: WechatLoginParams): Promise<AuthResponse> {
+  return request<AuthResponse>("/api/auth/wechat-login", {
     method: "POST",
     data: params,
   });

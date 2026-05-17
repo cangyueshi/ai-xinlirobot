@@ -1,34 +1,24 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import type { UserInfo } from "@/api/auth";
-import { login as loginApi, register as registerApi } from "@/api/auth";
+import { wechatLogin as wechatLoginApi } from "@/api/auth";
 
 export const useUserStore = defineStore("user", () => {
   const token = ref<string>(uni.getStorageSync("token") || "");
-  const userInfo = ref<UserInfo | null>(
-    uni.getStorageSync("userInfo") || null
-  );
+  const userInfo = ref<UserInfo | null>(uni.getStorageSync("userInfo") || null);
 
-  async function login(username: string, password: string) {
-    const res = await loginApi({ username, password });
-    token.value = res.access_token;
-    userInfo.value = res.user;
-    uni.setStorageSync("token", res.access_token);
-    uni.setStorageSync("userInfo", res.user);
-  }
-
-  async function register(params: {
-    username: string;
-    password: string;
+  async function wechatLogin(params: {
+    openid: string;
     display_name: string;
     role: string;
     phone?: string;
   }) {
-    const res = await registerApi(params);
+    const res = await wechatLoginApi(params);
     token.value = res.access_token;
     userInfo.value = res.user;
     uni.setStorageSync("token", res.access_token);
     uni.setStorageSync("userInfo", res.user);
+    uni.setStorageSync("openid", params.openid);
   }
 
   function logout() {
@@ -43,5 +33,5 @@ export const useUserStore = defineStore("user", () => {
     return !!token.value;
   }
 
-  return { token, userInfo, login, register, logout, isLoggedIn };
+  return { token, userInfo, wechatLogin, logout, isLoggedIn };
 });
