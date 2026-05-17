@@ -10,7 +10,11 @@
     { "path": "pages/chat/chat", "style": { "navigationBarTitleText": "AI 对话" } },
     { "path": "pages/chat/history", "style": { "navigationBarTitleText": "对话记录" } },
     { "path": "pages/chat/detail", "style": { "navigationBarTitleText": "对话详情" } },
-    { "path": "pages/chat/alerts", "style": { "navigationBarTitleText": "风险预警" } }
+    { "path": "pages/chat/alerts", "style": { "navigationBarTitleText": "风险预警" } },
+    { "path": "pages/assessment/list", "style": { "navigationBarTitleText": "心理测评" } },
+    { "path": "pages/assessment/answer", "style": { "navigationBarTitleText": "答题" } },
+    { "path": "pages/assessment/result", "style": { "navigationBarTitleText": "测评结果" } },
+    { "path": "pages/assessment/history", "style": { "navigationBarTitleText": "测评记录" } }
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",

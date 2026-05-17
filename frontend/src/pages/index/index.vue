@@ -35,9 +35,15 @@
         <text class="menu-arrow">›</text>
       </view>
 
-      <view class="menu-item" v-if="isVisitor">
+      <view class="menu-item" v-if="isVisitor" @click="goPage('/pages/assessment/list')">
         <text class="menu-icon">📝</text>
         <text class="menu-text">心理测评</text>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <view class="menu-item" v-if="isVisitor" @click="goPage('/pages/assessment/history')">
+        <text class="menu-icon">📈</text>
+        <text class="menu-text">测评记录</text>
         <text class="menu-arrow">›</text>
       </view>
 
