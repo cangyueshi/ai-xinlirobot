@@ -77,9 +77,27 @@
         <text class="menu-arrow">›</text>
       </view>
 
-      <view class="menu-item" v-if="isAdmin">
+      <view class="menu-item" v-if="isAdmin" @click="goPage('/pages/admin/dashboard')">
         <text class="menu-icon">⚙️</text>
-        <text class="menu-text">系统管理</text>
+        <text class="menu-text">管理后台首页</text>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <view class="menu-item" v-if="isSuperAdmin" @click="goPage('/pages/admin/counselors')">
+        <text class="menu-icon">👩‍⚕️</text>
+        <text class="menu-text">咨询师管理</text>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <view class="menu-item" v-if="isSuperAdmin" @click="goPage('/pages/admin/sub-admins')">
+        <text class="menu-icon">👤</text>
+        <text class="menu-text">次级管理员</text>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <view class="menu-item" v-if="isAdmin" @click="goPage('/pages/admin/visitors')">
+        <text class="menu-icon">👥</text>
+        <text class="menu-text">来访者管理</text>
         <text class="menu-arrow">›</text>
       </view>
 
@@ -105,7 +123,8 @@ const initial = computed(() => {
 
 const roleLabel = computed(() => {
   const labels: Record<string, string> = {
-    admin: "管理员",
+    super_admin: "超级管理员",
+    sub_admin: "次级管理员",
     counselor: "咨询师",
     visitor: "来访者",
   };
@@ -114,7 +133,10 @@ const roleLabel = computed(() => {
 
 const isVisitor = computed(() => userStore.userInfo?.role === "visitor");
 const isCounselor = computed(() => userStore.userInfo?.role === "counselor");
-const isAdmin = computed(() => userStore.userInfo?.role === "admin");
+const isAdmin = computed(() =>
+  userStore.userInfo?.role === "super_admin" || userStore.userInfo?.role === "sub_admin"
+);
+const isSuperAdmin = computed(() => userStore.userInfo?.role === "super_admin");
 
 function goPage(url: string) {
   uni.navigateTo({ url });

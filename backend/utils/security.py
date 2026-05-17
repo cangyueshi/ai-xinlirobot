@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Literal
 
 import bcrypt
 from jose import JWTError, jwt
@@ -23,11 +24,37 @@ def create_access_token(data: dict) -> str:
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
+def create_mini_program_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(
+        minutes=settings.MINI_PROGRAM_TOKEN_EXPIRE_MINUTES
+    )
+    to_encode.update({"exp": expire, "token_type": "mini_program"})
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def create_admin_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(
+        minutes=settings.ADMIN_TOKEN_EXPIRE_MINUTES
+    )
+    to_encode.update({"exp": expire, "token_type": "admin"})
+    return jwt.encode(to_encode, settings.ADMIN_SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
 def decode_access_token(token: str) -> dict | None:
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
-        return payload
+        return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except JWTError:
+        pass
+    try:
+        return jwt.decode(token, settings.ADMIN_SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except JWTError:
+        return None
+
+
+def decode_token_with_secret(token: str, secret: str) -> dict | None:
+    try:
+        return jwt.decode(token, secret, algorithms=[settings.ALGORITHM])
     except JWTError:
         return None

@@ -3,13 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, Base, SessionLocal
 from models import user, appointment, chat, assessment
-from routers import auth, appointments, chat as chat_router, assessments, counselor
+from routers import auth, appointments, chat as chat_router, assessments, counselor, admin
 from utils.seed_scales import seed_scales
+from utils.seed_admin import seed_super_admin
 
 Base.metadata.create_all(bind=engine)
 
 db = SessionLocal()
 seed_scales(db)
+seed_super_admin(db)
 db.close()
 
 app = FastAPI(title="AI 心理咨询机器人 API", version="1.0.0")
@@ -27,6 +29,7 @@ app.include_router(appointments.router)
 app.include_router(chat_router.router)
 app.include_router(assessments.router)
 app.include_router(counselor.router)
+app.include_router(admin.router)
 
 
 @app.get("/api/health")

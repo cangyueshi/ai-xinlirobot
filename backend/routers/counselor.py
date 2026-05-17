@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 
 from database import get_db
-from models.user import User, UserRole
+from models.user import User, UserRole, AccountStatus
 from models.appointment import Appointment, AppointmentStatus
 from models.chat import ChatSession, ChatMessage, RiskAlert, SessionStatus, RiskLevel
 from models.assessment import Assessment, Scale
@@ -36,7 +36,7 @@ def dashboard(
 
     total_visitors = (
         db.query(User)
-        .filter(User.role == UserRole.VISITOR, User.is_active == True)
+        .filter(User.role == UserRole.VISITOR, User.status == AccountStatus.ACTIVE)
         .count()
     )
 

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models.user import User, UserRole
+from models.user import User, UserRole, AccountStatus
 from models.appointment import Availability, Appointment, AppointmentStatus
 from schemas.appointment import AvailabilityBatchCreate, AppointmentCreate
 from schemas.user import UserResponse
@@ -109,7 +109,7 @@ def get_my_availabilities(
 def list_counselors(db: Session = Depends(get_db)):
     counselors = db.query(User).filter(
         User.role == UserRole.COUNSELOR,
-        User.is_active == True,
+        User.status == AccountStatus.ACTIVE,
     ).all()
     return [{"id": c.id, "display_name": c.display_name, "phone": c.phone} for c in counselors]
 

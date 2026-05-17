@@ -1,7 +1,9 @@
 {
   "pages": [
     { "path": "pages/login/login", "style": { "navigationBarTitleText": "登录" } },
-    { "path": "pages/register/register", "style": { "navigationBarTitleText": "注册" } },
+    { "path": "pages/login/admin-login", "style": { "navigationBarTitleText": "管理后台登录" } },
+    { "path": "pages/login/change-password", "style": { "navigationBarTitleText": "修改密码" } },
+    { "path": "pages/login/forgot-password", "style": { "navigationBarTitleText": "忘记密码" } },
     { "path": "pages/index/index", "style": { "navigationBarTitleText": "首页" } },
     { "path": "pages/availability/manage", "style": { "navigationBarTitleText": "管理可预约时间" } },
     { "path": "pages/booking/counselors", "style": { "navigationBarTitleText": "选择咨询师" } },
@@ -17,7 +19,11 @@
     { "path": "pages/assessment/history", "style": { "navigationBarTitleText": "测评记录" } },
     { "path": "pages/counselor/dashboard", "style": { "navigationBarTitleText": "工作台" } },
     { "path": "pages/counselor/visitors", "style": { "navigationBarTitleText": "来访者管理" } },
-    { "path": "pages/counselor/visitorDetail", "style": { "navigationBarTitleText": "来访者详情" } }
+    { "path": "pages/counselor/visitorDetail", "style": { "navigationBarTitleText": "来访者详情" } },
+    { "path": "pages/admin/dashboard", "style": { "navigationBarTitleText": "管理后台" } },
+    { "path": "pages/admin/counselors", "style": { "navigationBarTitleText": "咨询师管理" } },
+    { "path": "pages/admin/sub-admins", "style": { "navigationBarTitleText": "次级管理员" } },
+    { "path": "pages/admin/visitors", "style": { "navigationBarTitleText": "来访者管理" } }
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",
