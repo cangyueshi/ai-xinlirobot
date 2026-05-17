@@ -11,6 +11,18 @@
     </view>
 
     <view class="menu-list">
+      <view class="menu-item" v-if="isVisitor" @click="goPage('/pages/booking/counselors')">
+        <text class="menu-icon">📅</text>
+        <text class="menu-text">预约咨询师</text>
+        <text class="menu-arrow">›</text>
+      </view>
+
+      <view class="menu-item" v-if="isVisitor" @click="goPage('/pages/appointments/list')">
+        <text class="menu-icon">📋</text>
+        <text class="menu-text">我的预约</text>
+        <text class="menu-arrow">›</text>
+      </view>
+
       <view class="menu-item" v-if="isVisitor">
         <text class="menu-icon">💬</text>
         <text class="menu-text">开始 AI 对话</text>
@@ -18,20 +30,20 @@
       </view>
 
       <view class="menu-item" v-if="isVisitor">
-        <text class="menu-icon">📋</text>
+        <text class="menu-icon">�</text>
         <text class="menu-text">心理测评</text>
         <text class="menu-arrow">›</text>
       </view>
 
-      <view class="menu-item" v-if="isVisitor">
-        <text class="menu-icon">📅</text>
-        <text class="menu-text">预约咨询师</text>
+      <view class="menu-item" v-if="isCounselor" @click="goPage('/pages/availability/manage')">
+        <text class="menu-icon">⏰</text>
+        <text class="menu-text">管理可预约时间</text>
         <text class="menu-arrow">›</text>
       </view>
 
-      <view class="menu-item" v-if="isCounselor">
+      <view class="menu-item" v-if="isCounselor" @click="goPage('/pages/appointments/list')">
         <text class="menu-icon">📊</text>
-        <text class="menu-text">来访者管理</text>
+        <text class="menu-text">来访者预约</text>
         <text class="menu-arrow">›</text>
       </view>
 
@@ -79,6 +91,10 @@ const roleLabel = computed(() => {
 const isVisitor = computed(() => userStore.userInfo?.role === "visitor");
 const isCounselor = computed(() => userStore.userInfo?.role === "counselor");
 const isAdmin = computed(() => userStore.userInfo?.role === "admin");
+
+function goPage(url: string) {
+  uni.navigateTo({ url });
+}
 
 function handleLogout() {
   uni.showModal({
