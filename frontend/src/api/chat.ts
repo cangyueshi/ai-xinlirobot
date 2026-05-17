@@ -9,6 +9,10 @@ export interface ChatSession {
   risk_summary: string | null;
   ai_summary: string | null;
   alert_sent: boolean;
+  is_crisis_mode: boolean;
+  crisis_level: string | null;
+  user_message_count: number;
+  ending_reason: string | null;
   created_at: string | null;
 }
 
@@ -17,6 +21,11 @@ export interface ChatMessage {
   session_id: number;
   role: string;
   content: string;
+  session_ended?: boolean;
+  ending_reason?: string;
+  crisis_alert?: boolean;
+  crisis_level?: string;
+  crisis_cancelled?: boolean;
   created_at: string | null;
 }
 
@@ -25,6 +34,7 @@ export interface RiskAlert {
   session_id: number;
   visitor_id: number;
   level: string;
+  crisis_level: string | null;
   summary: string;
   is_read: boolean;
   created_at: string | null;

@@ -45,7 +45,7 @@
 
     <!-- 对话结束提示 -->
     <view v-if="sessionEnded" class="ended-bar">
-      <text>对话已结束，AI 已生成分析报告供咨询师查看</text>
+      <text>{{ endingMessage }}</text>
       <button class="back-btn" @click="goBack">返回首页</button>
     </view>
   </view>
@@ -61,6 +61,7 @@ const messages = ref<{ role: string; content: string }[]>([]);
 const inputText = ref("");
 const aiThinking = ref(false);
 const sessionEnded = ref(false);
+const endingMessage = ref("");
 const scrollTop = ref(0);
 
 async function agreeConsent() {
@@ -94,6 +95,30 @@ async function sendMsg() {
   try {
     const reply = await sendMessage(sessionId.value, text);
     messages.value.push({ role: "assistant", content: reply.content });
+
+    if (reply.crisis_alert) {
+      const levelLabels: Record<string, string> = {
+        level_1: "危机干预已启动，专业咨询师3分钟内将联系你",
+        level_2: "危机干预已启动，专业咨询师10分钟内将联系你",
+        level_3: "危机干预已启动，专业咨询师30分钟内将联系你",
+      };
+      messages.value.push({
+        role: "system",
+        content: levelLabels[reply.crisis_level || ""] || "危机预警已发送",
+      });
+    }
+
+    if (reply.crisis_cancelled) {
+      messages.value.push({
+        role: "system",
+        content: "危机模式已解除，继续正常对话。",
+      });
+    }
+
+    if (reply.session_ended) {
+      sessionEnded.value = true;
+      endingMessage.value = "对话已结束，AI 已生成分析报告供咨询师查看。";
+    }
   } catch (e: any) {
     messages.value.push({
       role: "assistant",

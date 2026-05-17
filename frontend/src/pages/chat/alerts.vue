@@ -12,8 +12,8 @@
       @click="viewAlert(a)"
     >
       <view class="header">
-        <text class="level-tag" :class="a.level">
-          {{ a.level === "red" ? "🔴 高危" : "🟡 中度" }}
+        <text class="level-tag" :class="getLevelClass(a)">
+          {{ getLevelLabel(a) }}
         </text>
         <text class="time">{{ formatDate(a.created_at) }}</text>
         <view v-if="!a.is_read" class="dot"></view>
@@ -52,6 +52,20 @@ async function viewAlert(a: any) {
   }
   uni.navigateTo({ url: `/pages/chat/detail?id=${a.session_id}` });
 }
+
+function getLevelLabel(a: any) {
+  if (a.crisis_level === "level_1") return "⚠️ 极高危（3分钟）";
+  if (a.crisis_level === "level_2") return "🔴 高危（10分钟）";
+  if (a.crisis_level === "level_3") return "🟠 中危（30分钟）";
+  return a.level === "red" ? "🔴 高危" : "🟡 中度";
+}
+
+function getLevelClass(a: any) {
+  if (a.crisis_level === "level_1") return "level_1";
+  if (a.crisis_level === "level_2") return "level_2";
+  if (a.crisis_level === "level_3") return "level_3";
+  return a.level === "red" ? "red" : "yellow";
+}
 </script>
 
 <style lang="scss" scoped>
@@ -62,6 +76,9 @@ async function viewAlert(a: any) {
 .card.unread { border-left: 3px solid #409eff; }
 .header { display: flex; align-items: center; margin-bottom: 8px; }
 .level-tag { font-size: 13px; font-weight: bold; }
+.level-tag.level_1 { color: #fff; background: #f56c6c; padding: 2px 8px; border-radius: 4px; }
+.level-tag.level_2 { color: #f56c6c; }
+.level-tag.level_3 { color: #e6a23c; }
 .level-tag.red { color: #f56c6c; }
 .level-tag.yellow { color: #e6a23c; }
 .time { font-size: 12px; color: #909399; margin-left: 10px; }
