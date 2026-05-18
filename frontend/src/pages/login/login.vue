@@ -7,16 +7,20 @@
     </view>
 
     <view class="login-area">
-      <button class="wechat-btn" @click="doWechatLogin" :loading="loading">
+      <button class="wechat-btn" @click="doWechatLogin" :loading="loading" :disabled="!agreed || loading">
         <text class="wechat-icon">�</text>
         <text>微信一键登录</text>
       </button>
 
-      <view class="tips">
-        <text>登录即表示同意</text>
-        <text class="link" @click="showTerms">《服务协议》</text>
-        <text>和</text>
-        <text class="link" @click="showPrivacy">《隐私政策》</text>
+      <view class="agreement">
+        <label class="agreement-label" @click="agreed = !agreed">
+          <text :class="['checkbox', { checked: agreed }]">{{ agreed ? '☑' : '☐' }}</text>
+          <text>我已阅读并同意</text>
+          <text class="link" @click.stop="showTerms">《服务协议》</text>
+          <text>和</text>
+          <text class="link" @click.stop="showPrivacy">《隐私政策》</text>
+        </label>
+        <text class="disclaimer">本 AI 助手不能替代专业心理咨询诊断</text>
       </view>
 
       <view class="admin-entry" @click="goAdminLogin">
@@ -32,21 +36,52 @@ import { useUserStore } from "@/store/user";
 
 const userStore = useUserStore();
 const loading = ref(false);
+const agreed = ref(false);
 
 function generateMockOpenid() {
   return "wx_h5_sim_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
 }
 
 async function doWechatLogin() {
+  if (!agreed.value) {
+    uni.showToast({ title: "请先阅读并同意服务协议和隐私政策", icon: "none" });
+    return;
+  }
   loading.value = true;
   try {
+    // #ifdef MP-WEIXIN
+    // 微信小程序模式：通过 wx.login() 获取 code，由后端换 openid
+    const loginRes = await new Promise<WechatMiniprogram.LoginSuccessCallbackResult>((resolve, reject) => {
+      uni.login({
+        provider: "weixin",
+        success: (res) => resolve(res),
+        fail: (err) => reject(err),
+      });
+    });
+    const mpRes = await uni.request({
+      url: `http://localhost:8000/api/auth/mp-login`,
+      method: "POST",
+      data: { code: loginRes.code },
+    });
+    const data = mpRes.data as any;
+    if (!data.openid) throw new Error("微信登录失败");
+    await userStore.wechatLogin({
+      openid: data.openid,
+      display_name: data.display_name || "微信用户",
+    });
+    // #endif
+
+    // #ifdef H5
+    // H5 开发模式：使用 mock openid（不依赖真实微信登录）
     await userStore.wechatLogin({
       openid: generateMockOpenid(),
       display_name: "微信用户" + Math.random().toString(36).slice(2, 6),
     });
+    // #endif
+
     uni.reLaunch({ url: "/pages/index/index" });
   } catch (e: any) {
-    uni.showToast({ title: e.detail || "登录失败", icon: "none" });
+    uni.showToast({ title: e?.errMsg || "登录失败，请重试", icon: "none" });
   } finally {
     loading.value = false;
   }
@@ -57,11 +92,11 @@ function goAdminLogin() {
 }
 
 function showTerms() {
-  uni.showToast({ title: "服务协议页（待开发）", icon: "none" });
+  uni.navigateTo({ url: "/pages/login/terms" });
 }
 
 function showPrivacy() {
-  uni.showToast({ title: "隐私政策页（待开发）", icon: "none" });
+  uni.navigateTo({ url: "/pages/login/privacy" });
 }
 </script>
 
@@ -83,8 +118,13 @@ function showPrivacy() {
   border-radius: 25px; font-size: 17px; font-weight: 500; border: none;
 }
 .wechat-btn:active { opacity: 0.8; }
+.wechat-btn:disabled { opacity: 0.5; }
 .wechat-icon { margin-right: 8px; font-size: 20px; }
-.tips { text-align: center; margin-top: 20px; font-size: 12px; color: #909399; }
+.agreement { text-align: center; margin-top: 16px; }
+.agreement-label { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 13px; color: #606266; }
+.checkbox { font-size: 18px; margin-right: 2px; color: #909399; }
+.checkbox.checked { color: #07c160; }
+.disclaimer { display: block; margin-top: 6px; font-size: 11px; color: #e6a23c; }
 .link { color: #409eff; }
 .admin-entry { margin-top: 30px; text-align: center; }
 .admin-entry text { font-size: 14px; color: #409eff; }

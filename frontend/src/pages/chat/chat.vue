@@ -27,6 +27,10 @@
           <text>正在思考...</text>
         </view>
       </view>
+      <!-- 永久免责声明 -->
+      <view class="disclaimer-row">
+        <text>⚠ 本 AI 助手不能替代专业心理咨询诊断，紧急情况请拨打 120 或心理援助热线 400-161-9995</text>
+      </view>
     </scroll-view>
 
     <!-- 输入区域 -->
@@ -105,6 +109,13 @@ async function sendMsg() {
       messages.value.push({
         role: "system",
         content: levelLabels[reply.crisis_level || ""] || "危机预警已发送",
+      });
+
+      uni.showModal({
+        title: "⚠️ 危机预警提醒",
+        content: "本 AI 助手不能替代专业心理咨询诊断。我们已紧急通知专业咨询师，请保持联系。\n\n如果您处于紧急危险状态，请立即拨打 120 或心理援助热线 400-161-9995。",
+        showCancel: false,
+        confirmText: "我知道了",
       });
     }
 
@@ -200,6 +211,12 @@ onUnmounted(() => {
 .bubble.assistant { background: #fff; color: #303133; border-bottom-left-radius: 4px; }
 .bubble.system { background: #fdf6ec; color: #e6a23c; font-size: 13px; max-width: 85%; text-align: center; }
 .bubble.thinking { color: #909399; font-style: italic; }
+.disclaimer-row {
+  text-align: center; padding: 8px 4px; margin-top: 4px;
+}
+.disclaimer-row text {
+  font-size: 10px; color: #bbb; line-height: 1.4;
+}
 
 .input-area {
   display: flex; align-items: center; padding: 10px 12px;

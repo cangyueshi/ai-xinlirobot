@@ -2,13 +2,14 @@ import uuid
 import secrets
 from datetime import datetime, timedelta
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, status as http_status
 from sqlalchemy.orm import Session
 
 from database import get_db
 from models.user import User, UserRole, AccountStatus, PasswordResetToken
 from schemas.user import (
-    UserLogin, WechatLogin, AdminLogin, UserResponse, TokenResponse,
+    UserLogin, WechatLogin, MpLoginRequest, AdminLogin, UserResponse, TokenResponse,
     ChangePassword, ForceChangePassword, ForgotPassword, ResetPassword,
 )
 from utils.security import (
@@ -70,6 +71,63 @@ def wechat_login(data: WechatLogin, db: Session = Depends(get_db)):
     token = create_mini_program_token({"sub": str(user.id), "role": user.role.value})
     user_dict = _build_user_response(user)
     return TokenResponse(access_token=token, user=UserResponse.model_validate(user_dict))
+
+
+# ==================== 小程序端：code → openid（jsCode2session） ====================
+
+@router.post("/mp-login")
+def mp_login(data: MpLoginRequest, db: Session = Depends(get_db)):
+    if not settings.WECHAT_APPID or not settings.WECHAT_APPSECRET:
+        raise HTTPException(
+            status_code=500,
+            detail="微信小程序未配置（WECHAT_APPID / WECHAT_APPSECRET 为空）"
+        )
+
+    url = (
+        f"https://api.weixin.qq.com/sns/jscode2session"
+        f"?appid={settings.WECHAT_APPID}"
+        f"&secret={settings.WECHAT_APPSECRET}"
+        f"&js_code={data.code}"
+        f"&grant_type=authorization_code"
+    )
+
+    try:
+        resp = httpx.get(url, timeout=10)
+        wx_data = resp.json()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"微信服务器请求失败: {str(e)}")
+
+    if "errcode" in wx_data and wx_data["errcode"] != 0:
+        raise HTTPException(
+            status_code=401,
+            detail=f"微信登录失败: {wx_data.get('errmsg', '未知错误')}"
+        )
+
+    openid = wx_data.get("openid")
+    if not openid:
+        raise HTTPException(status_code=401, detail="微信登录未获取到 openid")
+
+    user = db.query(User).filter(User.openid == openid).first()
+    if not user:
+        user = User(
+            openid=openid,
+            username=f"wx_{uuid.uuid4().hex[:12]}",
+            display_name=f"微信用户_{openid[-6:]}",
+            role=UserRole.VISITOR,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    _check_status(user)
+    token = create_mini_program_token({"sub": str(user.id), "role": user.role.value})
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "openid": user.openid,
+        "display_name": user.display_name,
+    }
 
 
 # ==================== 管理后台端：账号密码登录（咨询师/管理员） ====================

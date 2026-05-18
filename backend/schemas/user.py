@@ -26,6 +26,11 @@ class WechatLogin(BaseModel):
     avatar_url: str | None = None
 
 
+class MpLoginRequest(BaseModel):
+    """微信小程序 wx.login() → code → jscode2session"""
+    code: str
+
+
 class ChangePassword(BaseModel):
     old_password: str | None = None
     new_password: str = Field(min_length=6, max_length=128)

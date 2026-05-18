@@ -4,6 +4,8 @@
     { "path": "pages/login/admin-login", "style": { "navigationBarTitleText": "管理后台登录" } },
     { "path": "pages/login/change-password", "style": { "navigationBarTitleText": "修改密码" } },
     { "path": "pages/login/forgot-password", "style": { "navigationBarTitleText": "忘记密码" } },
+    { "path": "pages/login/terms", "style": { "navigationBarTitleText": "服务协议" } },
+    { "path": "pages/login/privacy", "style": { "navigationBarTitleText": "隐私政策" } },
     { "path": "pages/index/index", "style": { "navigationBarTitleText": "首页" } },
     { "path": "pages/availability/manage", "style": { "navigationBarTitleText": "管理可预约时间" } },
     { "path": "pages/booking/counselors", "style": { "navigationBarTitleText": "选择咨询师" } },
