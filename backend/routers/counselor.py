@@ -23,7 +23,7 @@ def dashboard(
         db.query(Appointment)
         .filter(
             Appointment.counselor_id == current_user.id,
-            Appointment.status == AppointmentStatus.BOOKED,
+            Appointment.status == AppointmentStatus.PENDING,
         )
         .count()
     )
@@ -104,7 +104,7 @@ def list_all_visitors(
 ):
     visitors = (
         db.query(User)
-        .filter(User.role == UserRole.VISITOR, User.is_active == True)
+        .filter(User.role == UserRole.VISITOR, User.status == AccountStatus.ACTIVE)
         .all()
     )
     result = []
@@ -114,7 +114,6 @@ def list_all_visitors(
         result.append({
             "id": v.id,
             "display_name": v.display_name,
-            "phone": v.phone,
             "chat_count": chat_count,
             "assessment_count": assessment_count,
         })
