@@ -57,6 +57,7 @@ def create_counselor(
         email=data.email,
         bio=data.bio,
         specialties=data.specialties,
+        must_change_password=True,
     )
     db.add(counselor)
     db.commit()
@@ -219,6 +220,7 @@ def create_sub_admin(
         role=UserRole.SUB_ADMIN,
         email=data.email,
         sub_admin_permissions=data.permissions,
+        must_change_password=True,
     )
     db.add(sub)
     db.commit()
