@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 心理咨询对话流程测试</title>
+<style>
+  /* ===== Reset & Base ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif; background: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
+
+  /* ===== Container ===== */
+  .container { width: 420px; height: 780px; background: #fff; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+  /* ===== Header ===== */
+  .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 18px 20px 12px; text-align: center; position: relative; flex-shrink: 0; }
+  .header h1 { font-size: 17px; font-weight: 600; letter-spacing: 1px; }
+  .header .subtitle { font-size: 11px; opacity: 0.75; margin-top: 2px; }
+
+  /* ===== Status Bar ===== */
+  .status-bar { display: flex; justify-content: center; gap: 16px; padding: 8px 16px; background: #f8f9ff; border-bottom: 1px solid #eee; flex-shrink: 0; font-size: 12px; }
+  .status-item { display: flex; align-items: center; gap: 5px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .status-dot.normal { background: #52c41a; }
+  .status-dot.warning { background: #faad14; }
+  .status-dot.danger { background: #ff4d4f; }
+  .status-dot.ended { background: #999; }
+  .mode-label { font-weight: 500; }
+
+  /* ===== Chat Area ===== */
+  .chat-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 2px; }
+
+  /* ===== Messages ===== */
+  .message { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.6; word-break: break-word; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .message.user { align-self: flex-end; background: #667eea; color: #fff; border-bottom-right-radius: 4px; }
+  .message.ai { align-self: flex-start; background: #f0f0f0; color: #333; border-bottom-left-radius: 4px; }
+  .message.crisis { background: #fff2f0; border: 1px solid #ffccc7; color: #cf1322; }
+  .message.crisis .msg-label { background: #ff4d4f; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 4px; margin-right: 6px; }
+  .message.ended { background: #f5f5f5; border: 1px solid #d9d9d9; color: #666; font-style: italic; }
+  .message.ended .msg-label { background: #999; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 4px; margin-right: 6px; }
+  .msg-role { font-size: 11px; color: #999; margin-bottom: 4px; }
+  .message.user .msg-role { text-align: right; color: rgba(255,255,255,0.7); }
+  .message.system { align-self: center; background: transparent; color: #999; font-size: 12px; text-align: center; max-width: 100%; border: none; padding: 4px 0; }
+
+  /* ===== Crisis Alert Banner ===== */
+  .crisis-banner { display: none; background: #ff4d4f; color: #fff; padding: 8px 16px; text-align: center; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+  .crisis-banner.show { display: block; animation: pulseBanner 1.5s ease infinite; }
+  @keyframes pulseBanner { 0%, 100% { background: #ff4d4f; } 50% { background: #ff7875; } }
+
+  /* ===== Quick Test Buttons ===== */
+  .quick-test { padding: 8px 12px; background: #fafafa; border-top: 1px solid #eee; flex-shrink: 0; }
+  .quick-test .label { font-size: 11px; color: #999; margin-bottom: 6px; }
+  .quick-test .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .quick-test button { padding: 5px 12px; font-size: 11px; border: 1px solid #d9d9d9; border-radius: 14px; background: #fff; color: #555; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .quick-test button:hover { border-color: #667eea; color: #667eea; background: #f0f2ff; }
+  .quick-test button.danger { border-color: #ff4d4f; color: #ff4d4f; }
+  .quick-test button.danger:hover { background: #fff2f0; }
+  .quick-test button.warning { border-color: #faad14; color: #d48806; }
+  .quick-test button.warning:hover { background: #fffbe6; }
+  .quick-test button.success { border-color: #52c41a; color: #389e0d; }
+  .quick-test button.success:hover { background: #f6ffed; }
+  .quick-test button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ===== Input Area ===== */
+  .input-area { display: flex; gap: 8px; padding: 10px 12px 16px; border-top: 1px solid #eee; background: #fff; flex-shrink: 0; }
+  .input-area input { flex: 1; border: 1px solid #e0e0e0; border-radius: 20px; padding: 8px 16px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  .input-area input:focus { border-color: #667eea; }
+  .input-area button { background: #667eea; color: #fff; border: none; border-radius: 20px; padding: 8px 20px; font-size: 14px; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+  .input-area button:hover { background: #5a6fd6; }
+  .input-area button:disabled { background: #bbb; cursor: not-allowed; }
+
+  /* ===== Legend ===== */
+  .legend { padding: 6px 12px; background: #fafafa; border-top: 1px solid #eee; display: flex; gap: 12px; font-size: 10px; color: #999; flex-wrap: wrap; flex-shrink: 0; }
+  .legend span { display: flex; align-items: center; gap: 3px; }
+  .legend .tag { padding: 1px 4px; border-radius: 3px; font-size: 9px; color: #fff; }
+  .tag.crisis-tag { background: #ff4d4f; }
+  .tag.end-tag { background: #999; }
+  .tag.normal-tag { background: #52c41a; }
+
+  /* ===== Event Log ===== */
+  .event-log { display: none; }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🧠 阿b的AI实验室 · 对话测试</h1>
+    <div class="subtitle">对话结束触发规则 &amp; 危机干预话术 流程验证</div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="status-item"><span class="status-dot normal" id="statusDot"></span> 模式: <strong class="mode-label" id="modeLabel">正常</strong></span>
+    <span class="status-item">对话: <strong id="countLabel">0</strong> / 10</span>
+    <span class="status-item">闲聊连续: <strong id="meaninglessLabel">0</strong></span>
+    <span class="status-item">重复倾诉: <strong id="repetitiveLabel">0</strong></span>
+  </div>
+
+  <!-- Crisis Alert Banner -->
+  <div class="crisis-banner" id="crisisBanner">⚠️ 已进入危机干预模式 · 后台已向值班咨询师发送警报</div>
+
+  <!-- Chat Area -->
+  <div class="chat-area" id="chatArea"></div>
+
+  <!-- Quick Test Buttons -->
+  <div class="quick-test" id="quickTest">
+    <div class="label">🧪 快捷测试（点击快速发送场景消息）：</div>
+    <div class="btns">
+      <button class="success" data-msg="我最近工作压力很大，经常失眠，感觉快要撑不住了。">😰 正常焦虑</button>
+      <button class="success" data-msg="我和孩子的关系越来越差，他完全不听我的话，我很痛苦。">👪 亲子关系</button>
+      <button class="warning" data-msg="我真的好难过">😢 重复倾诉1</button>
+      <button class="warning" data-msg="我太痛苦了">😢 重复倾诉2</button>
+      <button class="warning" data-msg="为什么会这样">😢 重复倾诉3</button>
+      <button class="warning" data-msg="你多大了？">💬 闲聊1</button>
+      <button class="warning" data-msg="给我讲个笑话">💬 闲聊2</button>
+      <button class="success" data-msg="谢谢，我知道该怎么做了">✅ 结束对话</button>
+      <button class="danger" data-msg="我想死，活着没有意义">⚠️ 高危危机</button>
+      <button class="danger" data-msg="我现在就想死，已经站在楼顶了">🚨 极高危危机</button>
+      <button class="success" data-msg="活着好累，没有希望">⚡ 中危危机</button>
+      <button id="resetBtn" style="border-color:#999;color:#999;">🔄 重置</button>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <span>🟢 <span class="tag normal-tag">正常</span> 普通对话</span>
+    <span>🔴 <span class="tag crisis-tag">危机</span> 危机干预</span>
+    <span>⚪ <span class="tag end-tag">结束</span> 对话终止</span>
+    <span>📊 所有数据仅前端模拟，不涉及真实 API</span>
+  </div>
+
+  <!-- Input Area -->
+  <div class="input-area">
+    <input type="text" id="messageInput" placeholder="输入消息，测试对话流程..." autocomplete="off">
+    <button id="sendBtn">发送</button>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+//  核心状态
+// ============================================================
+const state = {
+  userMsgCount: 0,
+  mode: 'normal',         // 'normal' | 'crisis' | 'ended'
+  crisisLevel: null,      // 1 | 2 | 3 | null
+  meaninglessStreak: 0,
+  repetitiveStreak: 0,
+  ended: false,
+  canCheckConditionA: false, // 是否已收集足够信息
+};
+
+// ============================================================
+//  关键词库（分层级）
+// ============================================================
+const KEYWORDS = {
+  crisisLevel1: [
+    '我现在就想死', '已经准备好自杀', '已经准备好自杀了',
+    '站在楼顶', '我在楼顶', '我买了安眠药', '买了安眠药',
+    '现在就跳', '马上自杀', '已经吃了安眠药', '在楼顶',
+    '准备好自杀了',
+  ],
+  crisisLevel2: [
+    '活着没有意义', '我想死', '真想一了百了', '一了百了',
+    '我不想活了', '不想活了', '活不下去了', '杀了他',
+    '杀了那个人', '不想活',
+  ],
+  crisisLevel3: [
+    '活着好累', '生活没有希望', '我真想消失', '想消失',
+    '没有希望', '真的好累', '觉得活着好累', '不想坚持了',
+  ],
+  meaningless: [
+    '你多大了', '你叫什么', '你会唱歌', '讲个笑话', '讲笑话',
+    '今天天气', '你吃了吗', '给我讲个', '唱首歌', '你几岁',
+    '男的女的', '你结婚了吗',
+  ],
+  repetitiveEmotion: [
+    '好难过', '太痛苦', '为什么会这样', '真的很难受', '受不了',
+    '好痛苦', '我很难过', '好难受', '为什么这样', '为什么是我',
+  ],
+  endingIntent: [
+    '谢谢我知道该怎么做了', '不用了我没事了', '就这样吧',
+    '我知道该怎么做了', '我没事了', '不用了', '谢谢你',
+    '告辞', '再见', '拜拜', '就到这里吧',
+  ],
+};
+
+// ============================================================
+//  AI 模拟回复
+// ============================================================
+const AI_RESPONSES = {
+  general: [
+    '我听到了你的烦恼，能多和我说说吗？是什么让你有了这样的感觉？',
+    '谢谢你愿意和我分享。这种状态持续多久了？',
+    '我能感受到你现在的心情。这件事对你的生活影响大吗？',
+    '嗯，我在认真听。你觉得自己为什么会这么想呢？',
+    '这听起来确实不容易。你有尝试过什么方法来缓解吗？',
+    '我能理解你的感受。能不能和我具体说说，什么事情让你印象最深？',
+    '你愿意把这些说出来，已经很勇敢了。这对你的睡眠和饮食有影响吗？',
+    '我明白了。从你的描述来看，这件事确实给你带来了很大的困扰。',
+  ],
+  topicResponses: {
+    '工作': '工作压力确实是现代人常见的困扰。你主要是在哪些方面感到压力？是工作量、人际关系，还是职业发展的焦虑？',
+    '压力': '压力如果长期积累，确实会让人感到疲惫。除了失眠之外，你还有别的身体上的反应吗？比如头痛、食欲变化？',
+    '失眠': '失眠往往是内心压力的一种信号。你的睡眠问题有多久了？是入睡困难，还是容易中途醒来？',
+    '孩子': '亲子关系确实让人操心。孩子现在多大了？具体是什么样的行为让你感到困扰呢？',
+    '关系': '关系问题往往牵涉很多情绪。在这段关系中，你最在意的是什么？',
+    '焦虑': '焦虑的时候，身体也会有反应。你能感觉到自己焦虑的时候，心跳加快、手心出汗，或者有其他身体上的感受吗？',
+    '情绪': '情绪本身不是问题，它是我们内心的信号灯。你希望自己的情绪是什么样的？或者说，你期待的状态是什么？',
+  },
+  infoCheckResponse: '好的，我已经对你的情况有了初步的了解。基于你提供的这些信息，我有以下几个建议：\n\n1️⃣ 每天给自己留 15 分钟的放空时间，不做任何事，只是听听音乐或安静地坐着\n2️⃣ 尝试把让你困扰的事情写下来，写出来本身就是一种释放\n3️⃣ 如果条件允许，可以每天做 10 分钟的有氧运动，对调节情绪很有帮助\n\n你觉得这些建议怎么样？或者你有其他想聊的吗？',
+};
+
+let responseIndex = 0;
+
+// ============================================================
+//  核心检测函数
+// ============================================================
+
+function detectCrisis(text) {
+  for (const kw of KEYWORDS.crisisLevel1) {
+    if (text.includes(kw)) return { level: 1, keyword: kw };
+  }
+  for (const kw of KEYWORDS.crisisLevel2) {
+    if (text.includes(kw)) return { level: 2, keyword: kw };
+  }
+  for (const kw of KEYWORDS.crisisLevel3) {
+    if (text.includes(kw)) return { level: 3, keyword: kw };
+  }
+  return null;
+}
+
+function detectMeaningless(text) {
+  return KEYWORDS.meaningless.some(kw => text.includes(kw));
+}
+
+function detectRepetitive(text) {
+  return KEYWORDS.repetitiveEmotion.some(kw => text.includes(kw));
+}
+
+function detectEndingIntent(text) {
+  return KEYWORDS.endingIntent.some(kw => text.includes(kw));
+}
+
+function isMeaningfulMessage(text) {
+  // 任何没有触发以上检测的消息都算"有意义"
+  return !detectMeaningless(text) && !detectRepetitive(text) && !detectEndingIntent(text);
+}
+
+// ============================================================
+//  AI 回复生成
+// ============================================================
+
+function generateNormalResponse(userText) {
+  // 尝试话题匹配
+  for (const [topic, response] of Object.entries(AI_RESPONSES.topicResponses)) {
+    if (userText.includes(topic)) {
+      return response;
+    }
+  }
+  // 轮询通用回复
+  const resp = AI_RESPONSES.general[responseIndex % AI_RESPONSES.general.length];
+  responseIndex++;
+  return resp;
+}
+
+// ============================================================
+//  话术模板（来自手册）
+// ============================================================
+
+function getNormalEndScript() {
+  const assessment = '轻度的情绪困扰，主要体现在近期的压力和焦虑，已经开始影响你的日常生活。';
+  return `感谢你愿意信任我，和我分享这么多心事。\n\n基于我们的交流，我初步判断你目前正经历：${assessment}\n\n作为AI助手，我只能为你提供初步的情绪疏导和通用建议。为了更专业、更安全、更有针对性地帮助你解决问题，我为你准备了两个选择：\n\n1️⃣ 预约专业心理咨询师：获得1对1的深度咨询服务，制定个性化解决方案\n2️⃣ 购买AI深度倾诉包：9.9元获得30条额外对话，我会陪你继续梳理情绪、探索问题根源\n\n无论你选择哪种方式，我都会在这里支持你。如果你现在需要安静一下，也可以随时回来找我。`;
+}
+
+function getEarlyEndAScript() {
+  return `我已经基本了解了你的情况，也给了你一些初步的建议。\n\n如果你觉得这些建议对你有帮助，可以先尝试执行一段时间。如果执行过程中遇到问题，或者有新的困扰，随时可以再来找我。\n\n如果你希望获得更深入的帮助，也可以预约我们的专业心理咨询师，或者购买AI深度倾诉包继续交流。`;
+}
+
+function getEarlyEndBScript() {
+  return `不好意思，我是专业的心理咨询辅助AI，只能为你提供情绪疏导和心理相关的帮助。\n\n如果你有任何心理上的困扰或情绪上的问题，都可以和我说。如果没有其他需要帮助的地方，我们今天的对话就先到这里了。`;
+}
+
+function getEarlyEndCScript() {
+  return `我能感受到你现在非常痛苦，也很理解你的心情。\n\n反复沉浸在负面情绪里会让你更加难受。如果你愿意，可以试着和我说说具体发生了什么事，或者是什么让你这么难过，这样我才能更好地帮助你。\n\n如果你暂时不想说更多，也可以先休息一下，等你准备好了再回来找我。`;
+}
+
+function getEarlyEndDScript() {
+  return `不客气，能帮到你我很开心。\n\n如果你之后还有任何需要，随时都可以回来找我。祝你一切顺利，照顾好自己。`;
+}
+
+function getCrisisScript(level) {
+  if (level === 1) {
+    return `（一级危机 · 极高危）\n\n我听到你说的话了，我非常非常担心你。你的生命非常重要，我不想看到你受到任何伤害。\n\n你现在在哪里？身边有人吗？可以告诉我你的具体位置吗？\n\n请你先不要做任何伤害自己的事情，给我一点时间，也给你自己一点时间。我们的专业心理咨询师正在赶来，马上就会和你说话。`;
+  }
+  if (level === 2) {
+    return `（二级危机 · 高危）\n\n我能感受到你现在非常绝望，一定是发生了非常痛苦的事情，才会让你有这样的想法。\n\n你有想过用什么方式结束自己的生命吗？你有具体的计划吗？\n\n我很担心你，你的生命非常宝贵。无论你经历了什么，都不值得用生命来付出代价。`;
+  }
+  if (level === 3) {
+    return `（三级危机 · 中危）\n\n我能理解你现在的感受，一定是遇到了很多困难，才会让你觉得这么疲惫和绝望。\n\n这种感觉持续多久了？是什么事情让你有了这样的想法？\n\n我知道现在你可能觉得看不到希望，但很多时候，困难只是暂时的。只要我们一起努力，总会有解决的办法。`;
+  }
+}
+
+// ============================================================
+//  主处理流程
+// ============================================================
+
+function processUserMessage(text) {
+  if (state.ended && state.mode !== 'crisis') return null;
+  if (!text.trim()) return null;
+
+  // 如果已经危机了，不再计数/触达其他规则，持续陪伴
+  if (state.mode === 'crisis') {
+    return { type: 'crisis_continue', text: generateCrisisContinueResponse() };
+  }
+
+  // 计数
+  state.userMsgCount++;
+
+  // 1. 危机检测（最高优先级）
+  const crisis = detectCrisis(text);
+  if (crisis) {
+    state.mode = 'crisis';
+    state.crisisLevel = crisis.level;
+    state.ended = false; // 危机模式下不结束
+    logEvent(`⚠️ 触发 ${['一','二','三'][crisis.level-1]}级危机: "${crisis.keyword}"`);
+    return { type: 'crisis', level: crisis.level, text: getCrisisScript(crisis.level) };
+  }
+
+  // 2. 连续闲聊检测（触发条件 B）
+  if (detectMeaningless(text)) {
+    state.meaninglessStreak++;
+    if (state.meaninglessStreak >= 2) {
+      state.mode = 'ended';
+      state.ended = true;
+      logEvent('⛔ 触发提前结束B: 连续无意义闲聊');
+      return { type: 'end_b', text: getEarlyEndBScript() };
+    }
+  } else {
+    state.meaninglessStreak = 0;
+  }
+
+  // 3. 重复倾诉检测（触发条件 C）
+  if (detectRepetitive(text)) {
+    state.repetitiveStreak++;
+    if (state.repetitiveStreak >= 3) {
+      state.mode = 'ended';
+      state.ended = true;
+      logEvent('⛔ 触发提前结束C: 重复倾诉无新信息');
+      return { type: 'end_c', text: getEarlyEndCScript() };
+    }
+  } else {
+    state.repetitiveStreak = 0;
+  }
+
+  // 4. 结束意愿检测（触发条件 D）
+  if (detectEndingIntent(text)) {
+    state.mode = 'ended';
+    state.ended = true;
+    logEvent('⛔ 触发提前结束D: 用户明确表示不需要帮助');
+    return { type: 'end_d', text: getEarlyEndDScript() };
+  }
+
+  // 5. 满10条 → 正常结束
+  if (state.userMsgCount >= 10) {
+    state.mode = 'ended';
+    state.ended = true;
+    logEvent('⛔ 触发正常结束: 满10条有效对话');
+    return { type: 'end_normal', text: getNormalEndScript() };
+  }
+
+  // 6. 条件A检测：信息已收集完整 + 3条以上建议已给
+  //    （模拟：第6条消息之后，且有累积有意义的对话）
+  if (state.userMsgCount >= 6 && state.canCheckConditionA) {
+    state.mode = 'ended';
+    state.ended = true;
+    logEvent('⛔ 触发提前结束A: 核心评估信息已收集完整');
+    return { type: 'end_a', text: getEarlyEndAScript() };
+  }
+
+  // 第4条消息后标记信息收集完成
+  if (state.userMsgCount >= 4) {
+    state.canCheckConditionA = true;
+  }
+
+  // 7. 正常回复
+  const resp = generateNormalResponse(text);
+  return { type: 'normal', text: resp };
+}
+
+// 危机模式下持续陪伴回复
+let crisisContinueCount = 0;
+function generateCrisisContinueResponse() {
+  const continues = [
+    '我在这里陪着你，我不会离开你。',
+    '你能听到我说话吗？请你回应我一下。',
+    '无论发生了什么，都有解决的办法，不要放弃自己。',
+    '我在这里，我一直在。',
+    '你再坚持一下，我们的咨询师很快就会来帮你。',
+    '和我说说话好吗？随便说什么都可以。',
+    '你的生命非常宝贵，请一定不要放弃。',
+    '深呼吸，跟着我：吸气——呼气——慢慢来。',
+  ];
+  crisisContinueCount++;
+  return continues[crisisContinueCount % continues.length];
+}
+
+// ============================================================
+//  UI 渲染
+// ============================================================
+
+const chatArea = document.getElementById('chatArea');
+const messageInput = document.getElementById('messageInput');
+const sendBtn = document.getElementById('sendBtn');
+const resetBtn = document.getElementById('resetBtn');
+const statusDot = document.getElementById('statusDot');
+const modeLabel = document.getElementById('modeLabel');
+const countLabel = document.getElementById('countLabel');
+const meaninglessLabel = document.getElementById('meaninglessLabel');
+const repetitiveLabel = document.getElementById('repetitiveLabel');
+const crisisBanner = document.getElementById('crisisBanner');
+
+function addMessage(text, type, label) {
+  const div = document.createElement('div');
+  div.className = `message ${type}`;
+
+  const roleSpan = document.createElement('div');
+  roleSpan.className = 'msg-role';
+  if (type === 'user') roleSpan.textContent = '你';
+  else if (type === 'crisis') roleSpan.textContent = '🤖 AI · 危机干预';
+  else if (type === 'ended') roleSpan.textContent = '🤖 AI · 对话结束';
+  else roleSpan.textContent = '🤖 AI 助手';
+
+  // 如果有标签（触发条件标识）
+  if (label) {
+    const tag = document.createElement('span');
+    tag.className = 'msg-label';
+    tag.textContent = label;
+    roleSpan.appendChild(tag);
+  }
+
+  const contentSpan = document.createElement('div');
+  contentSpan.style.whiteSpace = 'pre-wrap';
+  contentSpan.textContent = text;
+
+  div.appendChild(roleSpan);
+  div.appendChild(contentSpan);
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function addSystemMessage(text) {
+  const div = document.createElement('div');
+  div.className = 'message system';
+  div.textContent = text;
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function updateStatusBar() {
+  // 状态点
+  statusDot.className = 'status-dot';
+  if (state.mode === 'crisis') statusDot.classList.add('danger');
+  else if (state.mode === 'ended') statusDot.classList.add('ended');
+  else statusDot.classList.add('normal');
+
+  // 模式标签
+  const modeTexts = {
+    normal: '正常对话',
+    crisis: `危机干预 (${['','一','二','三'][state.crisisLevel || 0]}级)`,
+    ended: '对话已结束',
+  };
+  modeLabel.textContent = modeTexts[state.mode] || '正常';
+  if (state.mode === 'crisis') modeLabel.style.color = '#ff4d4f';
+  else if (state.mode === 'ended') modeLabel.style.color = '#999';
+  else modeLabel.style.color = '#333';
+
+  countLabel.textContent = state.userMsgCount;
+  meaninglessLabel.textContent = state.meaninglessStreak;
+  repetitiveLabel.textContent = state.repetitiveStreak;
+
+  // 危机横幅
+  crisisBanner.className = state.mode === 'crisis' ? 'crisis-banner show' : 'crisis-banner';
+
+  // 输入框状态
+  const disabled = state.mode === 'ended';
+  messageInput.disabled = disabled;
+  sendBtn.disabled = disabled;
+  if (disabled) messageInput.placeholder = '对话已结束，点击「重置」重新开始';
+}
+
+// ============================================================
+//  日志
+// ============================================================
+
+function logEvent(msg) {
+  addSystemMessage(`📋 ${msg}`);
+}
+
+// ============================================================
+//  发送消息
+// ============================================================
+
+function sendMessage(text) {
+  if (!text.trim()) return;
+  if (state.ended && state.mode !== 'crisis') return;
+
+  // 显示用户消息
+  addMessage(text, 'user');
+  messageInput.value = '';
+
+  // 处理
+  const result = processUserMessage(text);
+  if (!result) return;
+
+  // 显示 AI 回复
+  if (result.type === 'normal') {
+    addMessage(result.text, 'ai');
+  } else if (result.type === 'crisis') {
+    const levelNames = ['', '一级 · 极高危', '二级 · 高危', '三级 · 中危'];
+    addMessage(result.text, 'crisis', levelNames[result.level]);
+  } else if (result.type === 'end_a') {
+    addMessage(result.text, 'ended', '触发A');
+  } else if (result.type === 'end_b') {
+    addMessage(result.text, 'ended', '触发B');
+  } else if (result.type === 'end_c') {
+    addMessage(result.text, 'ended', '触发C');
+  } else if (result.type === 'end_d') {
+    addMessage(result.text, 'ended', '触发D');
+  } else if (result.type === 'end_normal') {
+    addMessage(result.text, 'ended', '满10条');
+  } else if (result.type === 'crisis_continue') {
+    addMessage(result.text, 'crisis', '持续陪伴');
+  }
+
+  updateStatusBar();
+}
+
+// ============================================================
+//  重置
+// ============================================================
+
+function resetAll() {
+  state.userMsgCount = 0;
+  state.mode = 'normal';
+  state.crisisLevel = null;
+  state.meaninglessStreak = 0;
+  state.repetitiveStreak = 0;
+  state.ended = false;
+  state.canCheckConditionA = false;
+  crisisContinueCount = 0;
+  responseIndex = 0;
+
+  chatArea.innerHTML = '';
+  addSystemMessage('🔄 已重置，开始新的对话测试。');
+  addMessage('你好，我是你的 AI 心理咨询助手。有什么想和我聊聊的吗？', 'ai');
+
+  updateStatusBar();
+}
+
+// ============================================================
+//  事件绑定
+// ============================================================
+
+// 发送按钮
+sendBtn.addEventListener('click', () => {
+  sendMessage(messageInput.value);
+});
+
+// 回车发送
+messageInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    sendMessage(messageInput.value);
+  }
+});
+
+// 快速测试按钮
+document.querySelectorAll('.quick-test button[data-msg]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const msg = btn.getAttribute('data-msg');
+    sendMessage(msg);
+  });
+});
+
+// 重置按钮
+resetBtn.addEventListener('click', resetAll);
+
+// ============================================================
+//  初始化
+// ============================================================
+
+resetAll();
+</script>
+</body>
+</html>

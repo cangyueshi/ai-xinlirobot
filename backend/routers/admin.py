@@ -32,6 +32,7 @@ def _serialize_user(u: User) -> dict:
         "specialties": u.specialties,
         "status": u.status.value if u.status else None,
         "must_change_password": u.must_change_password,
+        "is_approved": u.is_approved,
         "sub_admin_permissions": u.sub_admin_permissions,
         "created_at": u.created_at.isoformat() if u.created_at else None,
     }
@@ -58,6 +59,7 @@ def create_counselor(
         bio=data.bio,
         specialties=data.specialties,
         must_change_password=True,
+        is_approved=True,
     )
     db.add(counselor)
     db.commit()
@@ -180,6 +182,46 @@ def enable_counselor(
     counselor.status = AccountStatus.ACTIVE
     db.commit()
     return {"ok": True, "message": "账号已启用"}
+
+
+@router.post("/counselors/{counselor_id}/approve")
+def approve_counselor(
+    counselor_id: int,
+    current_user: User = Depends(require_super_admin),
+    db: Session = Depends(get_db),
+):
+    counselor = (
+        db.query(User)
+        .filter(User.id == counselor_id, User.role == UserRole.COUNSELOR)
+        .first()
+    )
+    if not counselor:
+        raise HTTPException(status_code=404, detail="咨询师不存在")
+
+    counselor.is_approved = True
+    db.commit()
+    return {"ok": True, "message": "咨询师已通过审核，现在可以被来访者预约"}
+
+
+@router.post("/counselors/{counselor_id}/reject")
+def reject_counselor(
+    counselor_id: int,
+    current_user: User = Depends(require_super_admin),
+    db: Session = Depends(get_db),
+):
+    counselor = (
+        db.query(User)
+        .filter(User.id == counselor_id, User.role == UserRole.COUNSELOR)
+        .first()
+    )
+    if not counselor:
+        raise HTTPException(status_code=404, detail="咨询师不存在")
+
+    counselor.is_approved = False
+    # 拒绝即禁用账号
+    counselor.status = AccountStatus.DISABLED
+    db.commit()
+    return {"ok": True, "message": "咨询师已被拒绝"}
 
 
 @router.delete("/counselors/{counselor_id}")
@@ -453,12 +495,14 @@ def dashboard_stats(
 ):
     total_visitors = db.query(User).filter(User.role == UserRole.VISITOR, User.status == AccountStatus.ACTIVE).count()
     total_counselors = db.query(User).filter(User.role == UserRole.COUNSELOR, User.status == AccountStatus.ACTIVE).count()
+    pending_counselors = db.query(User).filter(User.role == UserRole.COUNSELOR, User.is_approved == False, User.status != AccountStatus.DELETED).count()
     total_sessions = db.query(ChatSession).count()
     active_sessions = db.query(ChatSession).filter(ChatSession.status == "active").count()
 
     return {
         "total_visitors": total_visitors,
         "total_counselors": total_counselors,
+        "pending_counselors": pending_counselors,
         "total_sessions": total_sessions,
         "active_sessions": active_sessions,
     }

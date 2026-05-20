@@ -29,11 +29,23 @@ export interface Appointment {
 export interface Counselor {
   id: number;
   display_name: string;
+  specialties?: string;
+  bio?: string;
   phone: string | null;
+}
+
+export interface PrerequisitesResult {
+  ready: boolean;
+  missing_scales: { scale_id: number; name: string }[];
+  completed_scales: { scale_id: number; name: string; result_level: string; total_score: number }[];
 }
 
 export function getCounselors(): Promise<Counselor[]> {
   return request("/api/appointments/counselors");
+}
+
+export function checkPrerequisites(): Promise<PrerequisitesResult> {
+  return request("/api/appointments/prerequisites");
 }
 
 export function getCounselorAvailabilities(
@@ -47,6 +59,7 @@ export function getCounselorAvailabilities(
 export function bookAppointment(data: {
   availability_id: number;
   backup_availability_id?: number;
+  reason?: string;
 }): Promise<Appointment> {
   return request("/api/appointments/book", {
     method: "POST",

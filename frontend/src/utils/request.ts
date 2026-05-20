@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = "";  // 相对路径，dev 时 vite proxy 转发，build 后同源访问
 
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE";

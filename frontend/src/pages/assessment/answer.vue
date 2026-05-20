@@ -106,9 +106,9 @@ async function submit() {
       scale_id: scaleId.value,
       answers: answers.value,
     });
-    uni.redirectTo({
-      url: `/pages/assessment/result?data=${encodeURIComponent(JSON.stringify(result))}`,
-    });
+    // 存入本地存储，避免 URL 传参丢数据
+    uni.setStorageSync("lastAssessmentResult", result);
+    uni.redirectTo({ url: "/pages/assessment/result" });
   } catch (e: any) {
     uni.showToast({ title: e.detail || "提交失败", icon: "none" });
   } finally {

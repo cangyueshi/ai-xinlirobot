@@ -31,6 +31,7 @@ class User(Base):
     specialties = Column(Text, nullable=True)
     status = Column(Enum(AccountStatus), default=AccountStatus.ACTIVE)
     must_change_password = Column(Boolean, default=False)
+    is_approved = Column(Boolean, default=False)
     sub_admin_permissions = Column(Text, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

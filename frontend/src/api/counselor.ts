@@ -42,3 +42,40 @@ export function getVisitorAssessments(visitorId: number): Promise<any[]> {
 export function getVisitorSessions(visitorId: number): Promise<any[]> {
   return request(`/api/counselor/visitors/${visitorId}/sessions`);
 }
+
+export interface ScaleInfo {
+  id: number;
+  name: string;
+  description: string;
+  question_count: number;
+}
+
+export interface ScaleAssignment {
+  id: number;
+  visitor_id: number;
+  visitor_name: string;
+  scale_id: number;
+  scale_name: string;
+  status: string;
+  created_at: string | null;
+}
+
+export function getCounselorScales(): Promise<ScaleInfo[]> {
+  return request("/api/counselor/scales");
+}
+
+export function getScaleAssignments(): Promise<ScaleAssignment[]> {
+  return request("/api/counselor/scale-assignments");
+}
+
+export function createScaleAssignment(visitorId: number, scaleId: number): Promise<any> {
+  return request(`/api/counselor/scale-assignments?visitor_id=${visitorId}&scale_id=${scaleId}`, {
+    method: "POST",
+  });
+}
+
+export function deleteScaleAssignment(assignmentId: number): Promise<any> {
+  return request(`/api/counselor/scale-assignments/${assignmentId}`, {
+    method: "DELETE",
+  });
+}

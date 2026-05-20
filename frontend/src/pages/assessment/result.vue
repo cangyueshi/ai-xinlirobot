@@ -33,10 +33,11 @@ import { ref, computed, onMounted } from "vue";
 const result = ref<any>({ scale_name: "", total_score: 0, result_label: "", result_level: "none" });
 
 onMounted(() => {
-  const pages = getCurrentPages();
-  const opts = (pages[pages.length - 1].options as any);
-  if (opts.data) {
-    result.value = JSON.parse(decodeURIComponent(opts.data));
+  // 从本地存储读取最近一次测评结果
+  const saved = uni.getStorageSync("lastAssessmentResult");
+  if (saved) {
+    result.value = saved;
+    uni.removeStorageSync("lastAssessmentResult");
   }
 });
 
@@ -45,7 +46,7 @@ const levelClass = computed(() => {
 });
 
 function goHome() {
-  uni.reLaunch({ url: "/pages/index/index" });
+  uni.reLaunch({ url: "/pages/index/index?from=assessment" });
 }
 </script>
 

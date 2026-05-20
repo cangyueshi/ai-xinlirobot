@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models.user import User
-from models.assessment import Scale, Assessment, RiskLevel
+from models.user import User, UserRole
+from models.assessment import Scale, Assessment, ScaleAssignment, AssignStatus, RiskLevel
 from schemas.assessment import AnswerSubmit
 from utils.deps import get_current_user, require_role
 
@@ -13,17 +13,32 @@ router = APIRouter(prefix="/api/assessments", tags=["assessments"])
 
 
 @router.get("/scales")
-def list_scales(db: Session = Depends(get_db)):
+def list_scales(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     scales = db.query(Scale).filter(Scale.is_active == 1).all()
-    return [
-        {
+    result = []
+    for s in scales:
+        # 来访者：排除已完成过的量表
+        if current_user.role == UserRole.VISITOR:
+            done = (
+                db.query(Assessment)
+                .filter(
+                    Assessment.visitor_id == current_user.id,
+                    Assessment.scale_id == s.id,
+                )
+                .first()
+            )
+            if done:
+                continue
+        result.append({
             "id": s.id,
             "name": s.name,
             "description": s.description,
             "question_count": len(json.loads(s.questions_json)),
-        }
-        for s in scales
-    ]
+        })
+    return result
 
 
 @router.get("/scales/{scale_id}")
@@ -86,6 +101,14 @@ def submit_assessment(
         result_detail=f"{scale.name} | 总分 {total_score} | {label}",
     )
     db.add(assessment)
+
+    # 如果有咨询师分发的该量表，标记为已完成
+    db.query(ScaleAssignment).filter(
+        ScaleAssignment.visitor_id == current_user.id,
+        ScaleAssignment.scale_id == scale.id,
+        ScaleAssignment.status == AssignStatus.PENDING,
+    ).update({"status": AssignStatus.COMPLETED})
+
     db.commit()
     db.refresh(assessment)
 

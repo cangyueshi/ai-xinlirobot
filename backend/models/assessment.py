@@ -9,6 +9,11 @@ class RiskLevel(str, enum.Enum):
     RED = "red"
 
 
+class AssignStatus(str, enum.Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+
+
 class Scale(Base):
     __tablename__ = "scales"
 
@@ -31,4 +36,16 @@ class Assessment(Base):
     total_score = Column(Integer, nullable=False)
     result_level = Column(Enum(RiskLevel), default=RiskLevel.NONE)
     result_detail = Column(Text, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class ScaleAssignment(Base):
+    """咨询师分发量表给来访者的记录"""
+    __tablename__ = "scale_assignments"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    counselor_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    visitor_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    scale_id = Column(Integer, ForeignKey("scales.id"), nullable=False)
+    status = Column(Enum(AssignStatus), default=AssignStatus.PENDING)
     created_at = Column(DateTime, server_default=func.now())

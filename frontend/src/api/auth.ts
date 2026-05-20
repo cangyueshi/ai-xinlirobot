@@ -12,6 +12,7 @@ export interface UserInfo {
   specialties: string | null;
   status: "active" | "disabled" | "deleted";
   must_change_password: boolean;
+  is_approved: boolean;
   sub_admin_permissions: string | null;
   created_at: string | null;
 }

@@ -30,6 +30,7 @@ class ChatSession(Base):
     risk_level = Column(Enum(RiskLevel), default=RiskLevel.NONE)
     risk_summary = Column(Text, nullable=True)
     ai_summary = Column(Text, nullable=True)
+    counselor_summary = Column(Text, nullable=True)
     alert_sent = Column(Boolean, default=False)
     user_message_count = Column(Integer, default=0)
     is_crisis_mode = Column(Boolean, default=False)

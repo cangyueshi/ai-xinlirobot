@@ -48,6 +48,14 @@ export function deleteCounselor(id: number) {
   return request(`/api/admin/counselors/${id}`, { method: "DELETE" });
 }
 
+export function approveCounselor(id: number) {
+  return request(`/api/admin/counselors/${id}/approve`, { method: "POST" });
+}
+
+export function rejectCounselor(id: number) {
+  return request(`/api/admin/counselors/${id}/reject`, { method: "POST" });
+}
+
 export function getSubAdmins() {
   return request<UserInfo[]>("/api/admin/sub-admins");
 }

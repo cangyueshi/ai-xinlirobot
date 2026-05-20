@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -42,6 +41,7 @@ def _serialize_session(s: ChatSession):
         "risk_level": s.risk_level.value if s.risk_level else "none",
         "risk_summary": s.risk_summary,
         "ai_summary": s.ai_summary,
+        "counselor_summary": s.counselor_summary,
         "alert_sent": s.alert_sent,
         "is_crisis_mode": s.is_crisis_mode,
         "crisis_level": s.crisis_level.value if s.crisis_level else None,
@@ -77,12 +77,13 @@ def _get_history_dicts(db: Session, session_id: int) -> list[dict]:
 def _end_session_and_summarize(session: ChatSession, db: Session, ending_reason: str):
     messages = _get_history_dicts(db, session.id)
     risk_result = analyze_risk(" ".join([m["content"] for m in messages[-5:]]))
-    summary = generate_summary(messages)
+    visitor_summary, counselor_summary = generate_summary(messages)
 
     session.status = SessionStatus.COMPLETED
     session.risk_level = risk_result["risk_level"]
     session.risk_summary = risk_result["summary"]
-    session.ai_summary = summary
+    session.ai_summary = visitor_summary
+    session.counselor_summary = counselor_summary
     session.ending_reason = ending_reason
 
     if risk_result["risk_level"] != RiskLevel.NONE:
@@ -328,9 +329,14 @@ def get_my_sessions(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    q = db.query(ChatSession)
+    # 来访者不可查看历史对话记录
     if current_user.role == UserRole.VISITOR:
-        q = q.filter(ChatSession.visitor_id == current_user.id)
+        raise HTTPException(status_code=403, detail="来访者无权查看历史记录")
+    q = db.query(ChatSession)
+    if current_user.role == UserRole.COUNSELOR:
+        # 咨询师查看分配给自己的会话
+        q = q.filter(ChatSession.counselor_id == current_user.id)
+    # 管理员（含次级管理员）可查看所有记录，含未分配的会话
     result = q.order_by(ChatSession.created_at.desc()).all()
     return [_serialize_session(s) for s in result]
 
@@ -345,8 +351,14 @@ def get_session_messages(
     if not session:
         raise HTTPException(status_code=404, detail="对话不存在")
 
-    if current_user.role == UserRole.VISITOR and session.visitor_id != current_user.id:
-        raise HTTPException(status_code=403, detail="无权查看")
+    # 来访者无权查看历史对话消息
+    if current_user.role == UserRole.VISITOR:
+        raise HTTPException(status_code=403, detail="来访者无权查看历史记录")
+    # 咨询师只能查看分配给自己的会话
+    if current_user.role == UserRole.COUNSELOR:
+        if session.counselor_id != current_user.id:
+            raise HTTPException(status_code=403, detail="无权查看")
+    # 次级管理员和超级管理员可查看所有
 
     messages = (
         db.query(ChatMessage)
@@ -366,12 +378,7 @@ def get_alerts(
 ):
     alerts = (
         db.query(RiskAlert)
-        .filter(
-            or_(
-                RiskAlert.counselor_id == current_user.id,
-                RiskAlert.counselor_id == 0,
-            )
-        )
+        .filter(RiskAlert.counselor_id == current_user.id)
         .order_by(RiskAlert.created_at.desc())
         .all()
     )

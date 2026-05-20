@@ -61,6 +61,7 @@ class UserResponse(BaseModel):
     specialties: str | None = None
     status: AccountStatus
     must_change_password: bool = False
+    is_approved: bool = False
     sub_admin_permissions: str | None = None
     created_at: str | None = None
 

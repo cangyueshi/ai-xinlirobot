@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     SUPER_ADMIN_USERNAME: str = "admin"
     SUPER_ADMIN_PASSWORD: str = "admin123456"
     SUPER_ADMIN_EMAIL: str = ""
+    SUPER_ADMIN_WECHAT_OPENID: str = ""  # 指定微信 openid，该微信号登录时自动成为超级管理员
+
+    # CORS 白名单（多个用逗号分隔，如 http://localhost:5173,https://example.com）
+    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
 
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
