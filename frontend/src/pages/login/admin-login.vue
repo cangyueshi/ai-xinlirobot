@@ -1,15 +1,15 @@
 <template>
   <view class="page">
-    <view class="bg-decoration">
-      <view class="blob b1"></view>
-      <view class="blob b2"></view>
+    <view class="bg-ornament">
+      <view class="bg-blur bl-1"></view>
+      <view class="bg-blur bl-2"></view>
     </view>
 
     <view class="login-card">
-      <!-- 品牌标识 -->
-      <view class="card-header">
-        <view class="mini-logo">
-          <text class="mini-logo-text">🧠</text>
+      <!-- 品牌 -->
+      <view class="card-top">
+        <view class="card-logo">
+          <text class="card-logo-sigil">&#x2737;</text>
         </view>
         <text class="card-title">咨询师通道</text>
         <text class="card-subtitle">登录或注册咨询师账号</text>
@@ -19,108 +19,106 @@
       <view class="tabs">
         <view
           class="tab"
-          :class="{ active: currentTab === 'login' }"
+          :class="{ 'tab-active': currentTab === 'login' }"
           @click="currentTab = 'login'"
         >
-          <text class="tab-icon">🔐</text>
-          <text class="tab-text">登录</text>
+          <text class="tab-label">登录</text>
         </view>
         <view
           class="tab"
-          :class="{ active: currentTab === 'register' }"
+          :class="{ 'tab-active': currentTab === 'register' }"
           @click="currentTab = 'register'"
         >
-          <text class="tab-icon">📝</text>
-          <text class="tab-text">注册</text>
+          <text class="tab-label">注册</text>
         </view>
       </view>
 
-      <!-- 登录表单 -->
-      <view v-if="currentTab === 'login'" class="form-container">
-        <view class="form-group">
-          <text class="label">账号</text>
-          <view class="input-wrap">
-            <text class="input-icon">👤</text>
-            <input class="input" v-model="username" placeholder="请输入登录账号" />
+      <!-- 登录 -->
+      <view v-if="currentTab === 'login'" class="form-box">
+        <view class="field">
+          <text class="field-label">账号</text>
+          <view class="field-wrap">
+            <text class="field-symbol">&#x263A;</text>
+            <input class="field-input" v-model="username" placeholder="请输入登录账号" />
           </view>
         </view>
 
-        <view class="form-group">
-          <text class="label">密码</text>
-          <view class="input-wrap">
-            <text class="input-icon">🔑</text>
-            <input class="input" v-model="password" type="password" placeholder="请输入密码" />
+        <view class="field">
+          <text class="field-label">密码</text>
+          <view class="field-wrap">
+            <text class="field-symbol">&#x26BF;</text>
+            <input class="field-input" v-model="password" type="password" placeholder="请输入密码" />
           </view>
         </view>
 
-        <button class="primary-btn" @click="doLogin" :loading="loading">
+        <button class="btn-submit" @click="doLogin" :loading="loading">
           登录
         </button>
 
-        <view class="form-links">
-          <text class="link" @click="goForgot">忘记密码？</text>
+        <view class="form-foot">
+          <text class="foot-link" @click="goForgot">忘记密码？</text>
         </view>
       </view>
 
-      <!-- 注册表单 -->
-      <view v-if="currentTab === 'register'" class="form-container">
-        <view class="register-tip">
-          <text class="register-tip-icon">💡</text>
-          <text class="register-tip-text">注册后可直接登录使用，超级管理员审核后正式生效</text>
+      <!-- 注册 -->
+      <view v-if="currentTab === 'register'" class="form-box">
+        <view class="reg-notice">
+          <text class="notice-dot">&bull;</text>
+          <text class="notice-text">注册后可直接登录，管理员审核后正式生效</text>
         </view>
 
-        <view class="form-group">
-          <text class="label">姓名</text>
-          <view class="input-wrap">
-            <text class="input-icon">📛</text>
-            <input class="input" v-model="regName" placeholder="请输入您的姓名" />
+        <view class="field">
+          <text class="field-label">姓名</text>
+          <view class="field-wrap">
+            <text class="field-symbol">&#x263A;</text>
+            <input class="field-input" v-model="regName" placeholder="请输入您的姓名" />
           </view>
         </view>
 
-        <view class="form-group">
-          <text class="label">登录账号</text>
-          <view class="input-wrap">
-            <text class="input-icon">👤</text>
-            <input class="input" v-model="regUsername" placeholder="字母或数字，至少3位" />
+        <view class="field">
+          <text class="field-label">登录账号</text>
+          <view class="field-wrap">
+            <text class="field-symbol">&#x263D;</text>
+            <input class="field-input" v-model="regUsername" placeholder="字母或数字，至少3位" />
           </view>
         </view>
 
-        <view class="form-group">
-          <text class="label">密码</text>
-          <view class="input-wrap">
-            <text class="input-icon">🔑</text>
-            <input class="input" v-model="regPassword" type="password" placeholder="至少6位" />
+        <view class="field">
+          <text class="field-label">密码</text>
+          <view class="field-wrap">
+            <text class="field-symbol">&#x26BF;</text>
+            <input class="field-input" v-model="regPassword" type="password" placeholder="至少6位" />
           </view>
         </view>
 
-        <view class="form-group">
-          <text class="label">专业领域 <text class="optional">（选填）</text></text>
-          <view class="input-wrap">
-            <text class="input-icon">🎯</text>
-            <input class="input" v-model="regSpecialties" placeholder="如：情绪管理、人际关系、学业压力" />
+        <view class="field">
+          <text class="field-label">专业领域 <text class="field-optional">（选填）</text></text>
+          <view class="field-wrap">
+            <text class="field-symbol">&#x2702;</text>
+            <input class="field-input" v-model="regSpecialties" placeholder="如：情绪管理、人际关系" />
           </view>
         </view>
 
-        <view class="form-group">
-          <text class="label">个人简介 <text class="optional">（选填）</text></text>
-          <view class="input-wrap textarea-wrap">
-            <textarea class="textarea" v-model="regBio" placeholder="简单介绍您的专业背景和从业经历" maxlength="200" />
+        <view class="field">
+          <text class="field-label">个人简介 <text class="field-optional">（选填）</text></text>
+          <view class="field-wrap field-textarea">
+            <textarea class="ta-input" v-model="regBio" placeholder="简单介绍您的专业背景" maxlength="200" />
           </view>
         </view>
 
-        <button class="primary-btn register-btn" @click="doRegister" :loading="regLoading">
+        <button class="btn-submit btn-reg" @click="doRegister" :loading="regLoading">
           注册
         </button>
 
-        <view class="form-links">
-          <text class="link-gray">已有账号？</text>
-          <text class="link" @click="currentTab = 'login'">去登录</text>
+        <view class="form-foot">
+          <text class="foot-muted">已有账号？</text>
+          <text class="foot-link" @click="currentTab = 'login'">去登录</text>
         </view>
       </view>
 
       <!-- 返回 -->
-      <view class="back-row">
-        <text class="back-link" @click="goBack">← 返回首页</text>
+      <view class="card-back">
+        <text class="back-link" @click="goBack">&larr; 返回首页</text>
       </view>
     </view>
   </view>
@@ -136,12 +134,10 @@ const userStore = useUserStore();
 
 const currentTab = ref("login");
 
-// 登录
 const username = ref("");
 const password = ref("");
 const loading = ref(false);
 
-// 注册
 const regName = ref("");
 const regUsername = ref("");
 const regPassword = ref("");
@@ -223,87 +219,111 @@ function goBack() {
 </script>
 
 <style lang="scss" scoped>
-$primary: #5b8c7e;
-$primary-dark: #4a7568;
-$text-primary: #2c3e50;
-$text-secondary: #7a8a8a;
-$text-muted: #aab7b7;
+// ====================================================
+//  Warm Amber - 咨询师登录
+// ====================================================
+$primary:       #D4956A;
+$primary-dark:  #B87A52;
+$primary-light: #F0DCC8;
+$primary-pale:  #F8EDE2;
+
+$text-primary:  #3D322A;
+$text-secondary:#8A8275;
+$text-muted:    #B5A99A;
+
+$border-soft:   #E8E0D0;
+$card-bg:       rgba(255, 255, 255, 0.92);
+$bg-from:       #FDF8F4;
+$bg-to:         #F8EDE2;
+
+$radius-card:   28px;
+$radius-pill:   30px;
+$font-stack:    -apple-system, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 
 .page {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(145deg, #f0ebe4 0%, #e4efe9 50%, #f5f3ef 100%);
+  background: linear-gradient(145deg, $bg-from 0%, $bg-to 50%, #F0E3D0 100%);
   padding: 20px;
   position: relative;
   overflow: hidden;
+  font-family: $font-stack;
 }
 
-.bg-decoration {
+.bg-ornament {
   position: fixed;
   inset: 0;
   pointer-events: none;
   overflow: hidden;
 }
 
-.blob {
+.bg-blur {
   position: absolute;
   border-radius: 50%;
   filter: blur(60px);
 }
 
-.blob.b1 {
-  width: 280px; height: 280px;
-  background: rgba(91, 140, 126, 0.12);
-  top: -60px; right: -40px;
+.bl-1 {
+  width: 280px;
+  height: 280px;
+  background: rgba($primary, 0.1);
+  top: -60px;
+  right: -40px;
 }
 
-.blob.b2 {
-  width: 220px; height: 220px;
-  background: rgba(201, 123, 99, 0.1);
-  bottom: -40px; left: -60px;
+.bl-2 {
+  width: 220px;
+  height: 220px;
+  background: rgba($primary-dark, 0.08);
+  bottom: -40px;
+  left: -60px;
 }
 
-// 卡片
+//  卡片
 .login-card {
   width: 100%;
   max-width: 400px;
-  background: rgba(255, 255, 255, 0.92);
+  background: $card-bg;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-radius: 28px;
+  border-radius: $radius-card;
   padding: 32px 28px;
-  box-shadow: 0 12px 40px rgba(91, 140, 126, 0.1);
+  box-shadow: 0 12px 40px rgba(61, 50, 42, 0.08);
   position: relative;
   z-index: 1;
 }
 
-.card-header {
+.card-top {
   text-align: center;
   margin-bottom: 24px;
 }
 
-.mini-logo {
+.card-logo {
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #fff, #f5f8f7);
+  background: linear-gradient(135deg, $primary, $primary-dark);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 12px;
-  box-shadow: 0 4px 12px rgba(91, 140, 126, 0.1);
+  box-shadow: 0 4px 12px rgba($primary-dark, 0.15);
 }
 
-.mini-logo-text { font-size: 24px; }
+.card-logo-sigil {
+  font-size: 22px;
+  color: #fff;
+  font-weight: 400;
+}
 
 .card-title {
   font-size: 20px;
   font-weight: 700;
   color: $text-primary;
   display: block;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.04em;
 }
 
 .card-subtitle {
@@ -313,10 +333,10 @@ $text-muted: #aab7b7;
   margin-top: 4px;
 }
 
-// 选项卡
+//  选项卡
 .tabs {
   display: flex;
-  background: #f0f4f2;
+  background: $primary-pale;
   border-radius: 14px;
   padding: 4px;
   margin-bottom: 24px;
@@ -328,39 +348,61 @@ $text-muted: #aab7b7;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   padding: 10px 0;
   border-radius: 11px;
   transition: all 0.25s ease;
 }
 
-.tab.active {
+.tab-active {
   background: #fff;
-  box-shadow: 0 2px 8px rgba(91, 140, 126, 0.08);
+  box-shadow: 0 2px 8px rgba(61, 50, 42, 0.05);
 }
 
-.tab-icon { font-size: 14px; }
-.tab-text { font-size: 14px; font-weight: 500; color: $text-muted; }
-.tab.active .tab-text { color: $text-primary; font-weight: 600; }
+.tab-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-muted;
+}
 
-// 注册提示
-.register-tip {
+.tab-active .tab-label {
+  color: $text-primary;
+  font-weight: 600;
+}
+
+//  表单区域
+.form-box {
+}
+
+//  注册提示
+.reg-notice {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 12px;
-  background: #f0f7f4;
+  padding: 12px 14px;
+  background: $primary-pale;
   border-radius: 12px;
   margin-bottom: 16px;
 }
 
-.register-tip-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
-.register-tip-text { font-size: 12px; color: $text-secondary; line-height: 1.5; }
+.notice-dot {
+  font-size: 14px;
+  color: $primary;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
 
-// 表单
-.form-group { margin-bottom: 16px; }
+.notice-text {
+  font-size: 12px;
+  color: $text-secondary;
+  line-height: 1.5;
+}
 
-.label {
+//  字段
+.field {
+  margin-bottom: 16px;
+}
+
+.field-label {
   font-size: 13px;
   font-weight: 500;
   color: $text-primary;
@@ -368,26 +410,35 @@ $text-muted: #aab7b7;
   margin-bottom: 6px;
 }
 
-.optional { font-size: 12px; color: $text-muted; font-weight: 400; }
+.field-optional {
+  font-size: 12px;
+  color: $text-muted;
+  font-weight: 400;
+}
 
-.input-wrap {
+.field-wrap {
   display: flex;
   align-items: center;
-  background: #f5f8f7;
-  border: 1.5px solid #e0e8e5;
+  background: $bg-from;
+  border: 1.5px solid $border-soft;
   border-radius: 12px;
   padding: 0 14px;
   transition: border-color 0.2s;
 }
 
-.input-wrap:focus-within {
+.field-wrap:focus-within {
   border-color: $primary;
   background: #fff;
 }
 
-.input-icon { font-size: 14px; margin-right: 10px; flex-shrink: 0; }
+.field-symbol {
+  font-size: 14px;
+  color: $text-muted;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
 
-.input {
+.field-input {
   flex: 1;
   height: 46px;
   font-size: 15px;
@@ -397,11 +448,16 @@ $text-muted: #aab7b7;
   outline: none;
 }
 
-.input::placeholder { color: #c5cecb; }
+.field-input::placeholder {
+  color: $text-muted;
+}
 
-.textarea-wrap { align-items: flex-start; padding: 12px 14px; }
+.field-textarea {
+  align-items: flex-start;
+  padding: 12px 14px;
+}
 
-.textarea {
+.ta-input {
   width: 100%;
   min-height: 72px;
   font-size: 14px;
@@ -412,40 +468,66 @@ $text-muted: #aab7b7;
   line-height: 1.5;
 }
 
-.textarea::placeholder { color: #c5cecb; }
+.ta-input::placeholder {
+  color: $text-muted;
+}
 
-.primary-btn {
+//  按钮
+.btn-submit {
   width: 100%;
   height: 48px;
   background: linear-gradient(135deg, $primary, $primary-dark);
   color: #fff;
-  border-radius: 14px;
+  border-radius: $radius-pill;
   font-size: 16px;
   font-weight: 600;
   border: none;
   margin-top: 4px;
-  box-shadow: 0 4px 14px rgba(91, 140, 126, 0.2);
+  box-shadow: 0 4px 14px rgba($primary-dark, 0.2);
   transition: all 0.2s;
+  letter-spacing: 0.03em;
 }
 
-.primary-btn:active { transform: scale(0.97); opacity: 0.9; }
-.primary-btn[disabled] { opacity: 0.5; box-shadow: none; }
-
-.register-btn {
-  background: linear-gradient(135deg, #c97b63, #b86a52);
-  box-shadow: 0 4px 14px rgba(201, 123, 99, 0.25);
+.btn-submit:active {
+  transform: scale(0.97);
+  opacity: 0.9;
 }
 
-.form-links { text-align: center; margin-top: 14px; }
-.link { font-size: 14px; color: $primary; }
-.link-gray { font-size: 14px; color: $text-muted; }
+.btn-submit[disabled] {
+  opacity: 0.5;
+  box-shadow: none;
+}
 
-.back-row {
+.btn-reg {
+  background: linear-gradient(135deg, $primary-dark, #906055);
+}
+
+//  底部链接
+.form-foot {
+  text-align: center;
+  margin-top: 14px;
+}
+
+.foot-link {
+  font-size: 14px;
+  color: $primary;
+}
+
+.foot-muted {
+  font-size: 14px;
+  color: $text-muted;
+}
+
+//  返回
+.card-back {
   text-align: center;
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid #f0f4f2;
+  border-top: 1px solid $border-soft;
 }
 
-.back-link { font-size: 13px; color: $text-muted; }
+.back-link {
+  font-size: 13px;
+  color: $text-muted;
+}
 </style>

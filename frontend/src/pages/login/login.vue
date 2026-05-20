@@ -1,85 +1,85 @@
 <template>
   <view class="page">
-    <view class="bg-decoration">
-      <view class="circle c1"></view>
-      <view class="circle c2"></view>
+    <view class="bg-ornament">
+      <view class="orn-circle oc-1"></view>
+      <view class="orn-circle oc-2"></view>
+      <view class="orn-blob"></view>
     </view>
 
     <!-- 品牌区 -->
-    <view class="brand">
-      <view class="brand-icon-wrap">
-        <text class="brand-icon">🧠</text>
+    <view class="brand-zone">
+      <view class="brand-mark">
+        <view class="brand-icon">
+          <text class="brand-icon-sigil">&hearts;</text>
+        </view>
+        <view class="brand-ring"></view>
       </view>
-      <text class="brand-name">AI 心理咨询助手</text>
-      <text class="brand-desc">每一次倾诉，都被认真倾听</text>
+      <text class="brand-title">有聊心理</text>
+      <text class="brand-tagline">有温度的 AI 心理陪伴</text>
     </view>
 
     <!-- 入口卡片 -->
     <view class="entry-card">
-      <!-- 来访者入口 -->
-      <view class="visitor-section">
-        <view class="section-header">
-          <text class="section-icon">👤</text>
-          <text class="section-title">我是来访者</text>
-          <text class="section-badge">免费倾诉</text>
+      <!-- 来访者 -->
+      <view class="entry-block">
+        <view class="entry-block-head">
+          <text class="entry-block-title">我是来访者</text>
+          <text class="entry-block-badge">免费倾诉</text>
         </view>
-        <text class="section-desc">匿名与 AI 对话，获得即时情绪疏导</text>
+        <text class="entry-block-desc">与 AI 匿名对话，获得即时情绪疏导</text>
 
         <button
-          class="wechat-btn"
+          class="btn-primary"
           @click="doWechatLogin"
           :loading="loading"
           :disabled="!agreed || loading"
         >
-          <text class="wechat-icon">💬</text>
+          <text class="btn-primary-icon">&#x2763;</text>
           <text>微信一键登录</text>
         </button>
 
-        <view class="agreement">
+        <view class="agreement-bar">
           <label class="agreement-label" @click="agreed = !agreed">
-            <view class="checkbox" :class="{ checked: agreed }">
-              <text v-if="agreed" class="checkmark">✓</text>
+            <view class="ck-box" :class="{ 'ck-checked': agreed }">
+              <text v-if="agreed" class="ck-mark">&#x2713;</text>
             </view>
-            <text class="agree-text">已阅读并同意</text>
-            <text class="link" @click.stop="showTerms">《服务协议》</text>
-            <text class="agree-text">和</text>
-            <text class="link" @click.stop="showPrivacy">《隐私政策》</text>
+            <text class="ck-text">已阅读并同意</text>
+            <text class="ck-link" @click.stop="showTerms">《服务协议》</text>
+            <text class="ck-text">和</text>
+            <text class="ck-link" @click.stop="showPrivacy">《隐私政策》</text>
           </label>
         </view>
       </view>
 
-      <!-- 分割线 -->
-      <view class="divider">
+      <!-- 分割 -->
+      <view class="divider-rule">
         <view class="divider-line"></view>
-        <text class="divider-text">or</text>
+        <text class="divider-label">or</text>
         <view class="divider-line"></view>
       </view>
 
-      <!-- 咨询师入口 -->
-      <view class="counselor-section">
-        <view class="section-header">
-          <text class="section-icon">👩‍⚕️</text>
-          <text class="section-title">我是咨询师</text>
-          <text class="section-badge staff-badge">专业服务</text>
+      <!-- 咨询师 -->
+      <view class="entry-block">
+        <view class="entry-block-head">
+          <text class="entry-block-title">我是咨询师</text>
+          <text class="entry-block-badge badge-counselor">专业服务</text>
         </view>
-        <text class="section-desc">注册咨询师账号，管理预约与对话记录</text>
+        <text class="entry-block-desc">注册咨询师账号，管理预约与对话记录</text>
 
-        <button class="register-btn" @click="goRegister">
-          <text class="register-icon">📝</text>
-          <text class="register-text">注册咨询师账号</text>
-          <text class="register-arrow">→</text>
+        <button class="btn-outline" @click="goRegister">
+          <text class="btn-outline-label">注册咨询师账号</text>
+          <text class="btn-outline-arrow">&rarr;</text>
         </button>
 
-        <view class="login-hint">
-          <text class="hint-text">已有账号？</text>
-          <text class="hint-link" @click="goCounselorLogin">去登录</text>
+        <view class="switch-prompt">
+          <text class="switch-text">已有账号？</text>
+          <text class="switch-link" @click="goCounselorLogin">去登录</text>
         </view>
       </view>
     </view>
 
-    <!-- 底部 -->
-    <view class="footer">
-      <text class="disclaimer">本 AI 助手不能替代专业心理咨询诊断</text>
+    <view class="footer-note">
+      <text class="footer-disclaimer">AI 不能替代专业心理咨询诊断</text>
     </view>
   </view>
 </template>
@@ -150,12 +150,29 @@ function showPrivacy() {
 </script>
 
 <style lang="scss" scoped>
-$primary: #5b8c7e;
-$primary-dark: #4a7568;
-$bg: #f5f3ef;
-$text-primary: #2c3e50;
-$text-secondary: #7a8a8a;
-$text-muted: #aab7b7;
+// ====================================================
+//  Warm Therapy - 登录页
+// ====================================================
+$primary:       #D4956A;
+$primary-dark:  #B87A52;
+$primary-pale:  #F8EDE2;
+$primary-light: #F0DCC8;
+
+$bg-gradient-1: #FDF8F4;
+$bg-gradient-2: #F8EDE2;
+$bg-gradient-3: #F0E3D0;
+
+$text-primary:  #3D322A;
+$text-secondary:#8A8275;
+$text-muted:    #B5A99A;
+
+$card-bg:       rgba(255, 255, 255, 0.88);
+$border-light:  #E8E0D0;
+$shadow-card:   0 8px 32px rgba(61, 50, 42, 0.07);
+
+$radius-card:   24px;
+$radius-pill:   30px;
+$font-stack:    -apple-system, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 
 .page {
   position: relative;
@@ -163,121 +180,157 @@ $text-muted: #aab7b7;
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(165deg, #f0ebe4 0%, #e4efe9 40%, #f5f3ef 100%);
-  padding: 0 20px;
+  background: linear-gradient(160deg, $bg-gradient-1 0%, $bg-gradient-2 35%, $bg-gradient-3 100%);
+  padding: 0 24px;
   overflow: hidden;
+  font-family: $font-stack;
 }
 
-// 背景装饰
-.bg-decoration {
+//  背景装饰
+.bg-ornament {
   position: fixed;
   inset: 0;
   pointer-events: none;
   overflow: hidden;
 }
 
-.circle {
+.orn-circle {
   position: absolute;
   border-radius: 50%;
-  opacity: 0.3;
 }
 
-.circle.c1 {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, $primary 0%, transparent 70%);
-  top: -80px; right: -60px;
-  opacity: 0.15;
+.oc-1 {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba($primary, 0.12), transparent 70%);
+  top: -100px;
+  right: -80px;
 }
 
-.circle.c2 {
-  width: 200px; height: 200px;
-  background: radial-gradient(circle, #c97b63 0%, transparent 70%);
-  bottom: 60px; left: -40px;
-  opacity: 0.12;
+.oc-2 {
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba($primary-dark, 0.08), transparent 70%);
+  bottom: 80px;
+  left: -60px;
 }
 
-// 品牌区
-.brand {
+.orn-blob {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(#F0DCC8, 0.3), transparent 60%);
+  top: 20%;
+  left: -10%;
+}
+
+//  品牌区
+.brand-zone {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 44px 0 32px;
+  padding: 48px 0 28px;
   position: relative;
   z-index: 1;
 }
 
-.brand-icon-wrap {
-  width: 72px;
-  height: 72px;
-  border-radius: 22px;
-  background: linear-gradient(135deg, #fff, #f8faf9);
+.brand-mark {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.brand-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, $primary, $primary-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 18px;
-  box-shadow: 0 6px 20px rgba(91, 140, 126, 0.15);
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 6px 20px rgba($primary-dark, 0.2);
 }
 
-.brand-icon { font-size: 36px; }
+.brand-icon-sigil {
+  font-size: 28px;
+  color: #fff;
+  font-weight: 400;
+}
 
-.brand-name {
-  font-size: 24px;
+.brand-ring {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 76px;
+  height: 76px;
+  border-radius: 24px;
+  border: 1.5px solid rgba($primary, 0.15);
+}
+
+.brand-title {
+  font-size: 26px;
   font-weight: 700;
   color: $text-primary;
+  letter-spacing: 0.08em;
   margin-bottom: 6px;
-  letter-spacing: 0.5px;
 }
 
-.brand-desc {
+.brand-tagline {
   font-size: 14px;
   color: $text-secondary;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.04em;
 }
 
-// 入口卡片
+//  入口卡片
 .entry-card {
   width: 100%;
   max-width: 380px;
-  background: rgba(255, 255, 255, 0.85);
+  background: $card-bg;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 8px 32px rgba(91, 140, 126, 0.08);
+  border-radius: $radius-card;
+  padding: 28px 24px;
+  box-shadow: $shadow-card;
   position: relative;
   z-index: 1;
 }
 
-.section-header {
+.entry-block {
+  padding: 2px 0;
+}
+
+.entry-block-head {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 4px;
 }
 
-.section-icon { font-size: 16px; }
-
-.section-title {
+.entry-block-title {
   font-size: 15px;
   font-weight: 600;
   color: $text-primary;
+  letter-spacing: 0.01em;
 }
 
-.section-badge {
+.entry-block-badge {
   font-size: 10px;
   color: #fff;
   background: $primary;
-  padding: 1px 8px;
+  padding: 2px 10px;
   border-radius: 8px;
   font-weight: 500;
   margin-left: auto;
+  letter-spacing: 0.02em;
 }
 
-.staff-badge {
-  background: #c97b63;
+.badge-counselor {
+  background: $primary-dark;
 }
 
-.section-desc {
+.entry-block-desc {
   font-size: 13px;
   color: $text-secondary;
   display: block;
@@ -285,31 +338,43 @@ $text-muted: #aab7b7;
   line-height: 1.4;
 }
 
-// 来访者按钮
-.visitor-section { padding: 4px 0; }
-
-.wechat-btn {
+//  主按钮
+.btn-primary {
   width: 100%;
-  height: 48px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   background: linear-gradient(135deg, $primary, $primary-dark);
   color: #fff;
-  border-radius: 14px;
+  border-radius: $radius-pill;
   font-size: 16px;
   font-weight: 600;
   border: none;
-  box-shadow: 0 4px 14px rgba(91, 140, 126, 0.25);
+  box-shadow: 0 4px 14px rgba($primary-dark, 0.25);
   transition: all 0.2s;
+  letter-spacing: 0.02em;
 }
 
-.wechat-btn:active { transform: scale(0.97); opacity: 0.9; }
-.wechat-btn[disabled] { opacity: 0.5; box-shadow: none; }
-.wechat-icon { margin-right: 8px; font-size: 18px; }
+.btn-primary:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
 
-// 协议
-.agreement { margin-top: 12px; }
+.btn-primary[disabled] {
+  opacity: 0.5;
+  box-shadow: none;
+}
+
+.btn-primary-icon {
+  font-size: 16px;
+}
+
+//  协议
+.agreement-bar {
+  margin-top: 14px;
+}
 
 .agreement-label {
   display: flex;
@@ -321,11 +386,11 @@ $text-muted: #aab7b7;
   color: $text-muted;
 }
 
-.checkbox {
+.ck-box {
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  border: 1.5px solid #d0d5d5;
+  border: 1.5px solid $border-light;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -334,13 +399,29 @@ $text-muted: #aab7b7;
   transition: all 0.2s;
 }
 
-.checkbox.checked { background: $primary; border-color: $primary; }
-.checkmark { color: #fff; font-size: 10px; font-weight: bold; }
-.agree-text { font-size: 12px; color: $text-muted; }
-.link { color: $primary; font-size: 12px; }
+.ck-checked {
+  background: $primary;
+  border-color: $primary;
+}
 
-// 分割线
-.divider {
+.ck-mark {
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.ck-text {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.ck-link {
+  color: $primary;
+  font-size: 12px;
+}
+
+//  分割线
+.divider-rule {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -350,48 +431,75 @@ $text-muted: #aab7b7;
 .divider-line {
   flex: 1;
   height: 1px;
-  background: linear-gradient(to right, transparent, #dde5e2, transparent);
+  background: linear-gradient(to right, transparent, $border-light, transparent);
 }
 
-.divider-text { font-size: 12px; color: $text-muted; font-weight: 500; }
+.divider-label {
+  font-size: 12px;
+  color: $text-muted;
+  font-weight: 500;
+}
 
-// 咨询师入口
-.counselor-section { padding: 4px 0; }
-
-.register-btn {
+//  轮廓按钮
+.btn-outline {
   width: 100%;
-  height: 48px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff;
+  background: transparent;
   color: $text-primary;
-  border-radius: 14px;
+  border-radius: $radius-pill;
   font-size: 15px;
   font-weight: 600;
-  border: 1.5px solid #e0e8e5;
+  border: 1.5px solid $border-light;
   transition: all 0.2s;
 }
 
-.register-btn:active {
-  background: #f5f8f7;
-  border-color: #c97b63;
+.btn-outline:active {
+  background: $primary-pale;
+  border-color: $primary-light;
   transform: scale(0.98);
 }
 
-.register-icon { margin-right: 8px; font-size: 16px; }
-.register-text { flex: 1; text-align: center; }
-.register-arrow { font-size: 16px; color: $text-muted; }
-
-.login-hint {
+.btn-outline-label {
+  flex: 1;
   text-align: center;
-  margin-top: 10px;
 }
 
-.hint-text { font-size: 13px; color: $text-muted; }
-.hint-link { font-size: 13px; color: $primary; margin-left: 4px; }
+.btn-outline-arrow {
+  font-size: 16px;
+  color: $text-muted;
+  padding-right: 4px;
+}
 
-// 底部
-.footer { padding: 24px 0 32px; position: relative; z-index: 1; }
-.disclaimer { font-size: 11px; color: $text-muted; text-align: center; }
+.switch-prompt {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.switch-text {
+  font-size: 13px;
+  color: $text-muted;
+}
+
+.switch-link {
+  font-size: 13px;
+  color: $primary;
+  margin-left: 4px;
+}
+
+//  底部
+.footer-note {
+  padding: 28px 0 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-disclaimer {
+  font-size: 11px;
+  color: $text-muted;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
 </style>

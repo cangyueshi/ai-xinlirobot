@@ -156,6 +156,18 @@ def admin_login(data: AdminLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="普通用户不能登录管理后台，请使用小程序")
 
     _check_status(user)
+
+    # 正式超级管理员（id=1）登录时，自动禁用所有测试管理账号
+    if user.id == 1 and user.role == UserRole.SUPER_ADMIN:
+        test_accounts = db.query(User).filter(
+            User.username.like("test_%"),
+            User.status != AccountStatus.DISABLED,
+        ).all()
+        for ta in test_accounts:
+            ta.status = AccountStatus.DISABLED
+        if test_accounts:
+            db.commit()
+
     token = create_admin_token({"sub": str(user.id), "role": user.role.value})
 
     user_dict = _build_user_response(user)

@@ -1,23 +1,41 @@
 <template>
   <view class="page">
-    <!-- 顶部栏（含结束按钮） -->
+    <!-- 顶部栏 -->
     <view v-if="!showConsent && messages.length > 0" class="chat-header">
-      <text class="chat-header-title">{{ bookingMode ? '收集来访原因' : 'AI 心理助手' }}</text>
-      <text class="chat-header-end" @click="endChat">❌</text>
+      <text class="chat-header-title">{{ bookingMode ? '来访原因' : 'AI 心理助手' }}</text>
+      <view class="chat-header-end" @click="endChat">
+        <text class="end-icon">&times;</text>
+      </view>
     </view>
 
-    <!-- 知情同意弹窗 -->
+    <!-- 知情同意 -->
     <view v-if="showConsent" class="consent-overlay">
       <view class="consent-dialog">
-        <text class="consent-icon">🛡️</text>
-        <text class="consent-title">知情同意</text>
-        <view class="consent-items">
-          <text class="consent-item">· 对话记录仅你和你选择的咨询师可见</text>
-          <text class="consent-item">· 我是 AI 助手，不能做诊断或开药</text>
-          <text class="consent-item">· 如检测到紧急危险，会通知咨询师</text>
-          <text class="consent-item">· 你随时可以结束对话</text>
+        <view class="consent-top">
+          <view class="consent-icon-wrap">
+            <text class="consent-icon-symbol">&#x2763;</text>
+          </view>
         </view>
-        <button class="consent-btn" @click="agreeConsent">了解并开始对话</button>
+        <text class="consent-title">开始对话前</text>
+        <view class="consent-items">
+          <view class="consent-item">
+            <text class="consent-dot">&bull;</text>
+            <text class="consent-text">对话记录仅你和咨询师可见</text>
+          </view>
+          <view class="consent-item">
+            <text class="consent-dot">&bull;</text>
+            <text class="consent-text">AI 不能做诊断或开药</text>
+          </view>
+          <view class="consent-item">
+            <text class="consent-dot">&bull;</text>
+            <text class="consent-text">检测到紧急情况会通知咨询师</text>
+          </view>
+          <view class="consent-item">
+            <text class="consent-dot">&bull;</text>
+            <text class="consent-text">你随时可以结束对话</text>
+          </view>
+        </view>
+        <button class="consent-btn" @click="agreeConsent">了解，开始对话</button>
       </view>
     </view>
 
@@ -35,43 +53,46 @@
           class="msg-row"
           :class="msg.role"
         >
-          <!-- 头像 -->
           <view v-if="msg.role === 'assistant'" class="msg-avatar">
             <text class="msg-avatar-text">AI</text>
           </view>
-          <view v-if="msg.role === 'user'" class="msg-avatar user-avatar-icon">
-            <text class="msg-avatar-text">{{ myInitial }}</text>
-          </view>
 
-          <!-- 气泡 -->
           <view class="bubble-wrap">
             <view class="bubble" :class="msg.role">
               <text class="bubble-text">{{ msg.content }}</text>
             </view>
             <text class="bubble-time">{{ formatTime(msg.created_at) }}</text>
           </view>
+
+          <view v-if="msg.role === 'user'" class="msg-avatar user-av">
+            <text class="msg-avatar-text">{{ myInitial }}</text>
+          </view>
         </view>
 
-        <!-- AI 思考动画 -->
+        <!-- 系统消息 -->
+        <view v-for="(msg, i) in messages.filter(m => m.role === 'system')" :key="'sys-' + i" class="msg-row system">
+          <view class="sys-bubble">{{ msg.content }}</view>
+        </view>
+
+        <!-- AI 思考中 -->
         <view v-if="aiThinking" class="msg-row assistant">
           <view class="msg-avatar">
             <text class="msg-avatar-text">AI</text>
           </view>
           <view class="bubble-wrap">
-            <view class="bubble assistant thinking-bubble">
-              <view class="thinking-dots">
-                <view class="dot"></view>
-                <view class="dot"></view>
-                <view class="dot"></view>
+            <view class="bubble assistant think-bubble">
+              <view class="think-dots">
+                <view class="tdot"></view>
+                <view class="tdot"></view>
+                <view class="tdot"></view>
               </view>
             </view>
           </view>
         </view>
       </view>
 
-      <!-- 永久免责声明 -->
       <view class="disclaimer">
-        <text>⚠ AI 助手不能替代专业诊断，紧急情况请拨打 120 或心理援助热线 400-161-9995</text>
+        <text>AI 不能替代专业诊断，紧急情况请拨打 120 或心理援助热线 400-161-9995</text>
       </view>
     </scroll-view>
 
@@ -87,33 +108,37 @@
       />
       <button
         class="send-btn"
-        :class="{ active: inputText }"
+        :class="{ 'send-btn-active': inputText }"
         :disabled="!inputText || aiThinking"
         @click="sendMsg"
-      >发送</button>
+      >
+        <text class="send-arrow">&rarr;</text>
+      </button>
     </view>
 
-    <!-- 对话结束面板 -->
+    <!-- 结束面板 -->
     <view v-if="sessionEnded" class="ended-panel">
       <view class="ended-header">
-        <text class="ended-icon">💚</text>
+        <view class="ended-icon-wrap">
+          <text class="ended-icon-symbol">&#x2764;</text>
+        </view>
         <text class="ended-title">{{ bookingMode ? '来访原因已收集' : '对话已结束' }}</text>
         <text class="ended-reason">{{ endingLabel }}</text>
       </view>
+
       <view v-if="bookingMode" class="booking-hint">
         <text class="booking-hint-text">点击「提交预约」完成预约，AI 会将会话摘要作为来访原因提交给咨询师。</text>
       </view>
 
-      <!-- 评估摘要卡片 -->
       <view class="summary-card">
-        <text class="summary-label">AI 评估摘要</text>
-        <text class="summary-text">{{ assessmentSummary || endingMessage }}</text>
+        <text class="summary-caption">AI 评估摘要</text>
+        <text class="summary-main">{{ assessmentSummary || endingMessage }}</text>
       </view>
 
       <view class="ended-actions">
-        <button v-if="bookingMode" class="action-btn primary" @click="submitBooking">提交预约</button>
-        <button v-else class="action-btn primary" @click="goBack">返回首页</button>
-        <button class="action-btn outline" @click="restartChat">重新开始</button>
+        <button v-if="bookingMode" class="act-btn act-primary" @click="submitBooking">提交预约</button>
+        <button v-else class="act-btn act-primary" @click="goBack">返回首页</button>
+        <button class="act-btn act-outline" @click="restartChat">重新开始</button>
       </view>
     </view>
   </view>
@@ -137,7 +162,6 @@ const endingMessage = ref("");
 const assessmentSummary = ref("");
 const scrollTop = ref(0);
 
-// 预约模式
 const bookingMode = ref(false);
 const bookingCounselorId = ref(0);
 const bookingAvailabilityId = ref(0);
@@ -177,12 +201,9 @@ async function agreeConsent() {
     const session = await createSession();
     sessionId.value = session.id;
     const greeting = bookingMode.value
-      ? "你好，我是 AI 心理助手。了解到你正在预约心理咨询，可以跟我说说你希望咨询师帮助你解决什么问题吗？不用担心，随便聊聊就好，我会帮你整理好来访原因。"
+      ? "你好，我是 AI 心理助手。了解到你正在预约心理咨询，可以跟我说说你希望咨询师帮你解决什么问题吗？不用担心，随便聊聊就好，我会帮你整理好来访原因。"
       : "你好，我是 AI 心理助手。今天想聊些什么呢？我会认真倾听。";
-    messages.value.push({
-      role: "assistant",
-      content: greeting,
-    });
+    messages.value.push({ role: "assistant", content: greeting });
   } catch {
     uni.showToast({ title: "启动对话失败", icon: "none" });
   }
@@ -192,10 +213,8 @@ async function sendMsg() {
   const text = inputText.value.trim();
   if (!text || sessionEnded.value || aiThinking.value) return;
   inputText.value = "";
-
   messages.value.push({ role: "user", content: text });
   scrollToBottom();
-
   aiThinking.value = true;
   try {
     const reply = await sendMessage(sessionId.value, text);
@@ -204,7 +223,6 @@ async function sendMsg() {
       content: reply.content,
       created_at: reply.created_at,
     });
-
     if (reply.crisis_alert) {
       const levelLabels: Record<string, string> = {
         level_1: "危机干预已启动，专业咨询师 3 分钟内将联系你",
@@ -216,22 +234,14 @@ async function sendMsg() {
         content: levelLabels[reply.crisis_level || ""] || "危机预警已发送",
       });
     }
-
     if (reply.crisis_cancelled) {
-      messages.value.push({
-        role: "system",
-        content: "危机模式已解除，继续正常对话。",
-      });
+      messages.value.push({ role: "system", content: "危机模式已解除" });
     }
-
     if (reply.session_ended) {
       handleSessionEnd(reply, "manual_end");
     }
   } catch {
-    messages.value.push({
-      role: "assistant",
-      content: "抱歉，出现了一些问题，请稍后再试。",
-    });
+    messages.value.push({ role: "assistant", content: "抱歉，出现了一些问题，请稍后再试。" });
   } finally {
     aiThinking.value = false;
     scrollToBottom();
@@ -242,10 +252,7 @@ function handleSessionEnd(reply: any, reason: string) {
   sessionEnded.value = true;
   endingReason.value = reply.ending_reason || reason;
   endingMessage.value = reply.content || "感谢你的信任，对话已结束。";
-
-  // 提取评估摘要（去掉模板格式，提取核心内容）
   const content = reply.content || "";
-  // 尝试从 Ending Template 中提取 assessment 部分
   const match = content.match(/我初步判断你目前正经历：\n([\s\S]*?)(?:\n\n|\n1[.、])/);
   if (match) {
     assessmentSummary.value = match[1].trim();
@@ -260,27 +267,19 @@ async function endChat() {
     content: "确定要结束本次对话吗？AI 将生成评估报告。",
   });
   if (!confirm) return;
-
   aiThinking.value = true;
   try {
     const result = await endSession(sessionId.value);
     const aiMsg = result.ai_summary || "感谢你的信任，对话已结束。";
-    messages.value.push({
-      role: "assistant",
-      content: aiMsg,
-    });
+    messages.value.push({ role: "assistant", content: aiMsg });
     assessmentSummary.value = aiMsg;
     sessionEnded.value = true;
-
     const riskLabels: Record<string, string> = {
       none: "未检测到风险",
       yellow: "检测到中度风险信号，已通知咨询师",
       red: "检测到高危信号，已紧急通知咨询师",
     };
-    messages.value.push({
-      role: "system",
-      content: riskLabels[result.risk_level] || "对话已结束",
-    });
+    messages.value.push({ role: "system", content: riskLabels[result.risk_level] || "对话已结束" });
     scrollToBottom();
   } catch {
     uni.showToast({ title: "结束失败", icon: "none" });
@@ -290,9 +289,7 @@ async function endChat() {
 }
 
 function scrollToBottom() {
-  nextTick(() => {
-    scrollTop.value = 99999;
-  });
+  nextTick(() => { scrollTop.value = 99999; });
 }
 
 async function submitBooking() {
@@ -313,9 +310,7 @@ async function submitBooking() {
   }
 }
 
-function goBack() {
-  uni.navigateBack();
-}
+function goBack() { uni.navigateBack(); }
 
 function restartChat() {
   sessionEnded.value = false;
@@ -342,29 +337,89 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-// ====== 色彩 ======
-$primary: #5b8c7e;
-$primary-light: #e8f0ed;
-$bg: #f5f3ef;
-$bubble-user: #5b8c7e;
-$bubble-assistant: #ffffff;
-$text-primary: #2c3e50;
-$text-secondary: #7a8a8a;
-$text-muted: #aab7b7;
+// ====================================================
+//  Warm Amber Chat - 温暖琥珀聊天配色
+// ====================================================
+$bg-main:       #FDF8F4;
+$bg-card:       #FFFFFF;
+$primary:       #D4956A;
+$primary-dark:  #B87A52;
+$primary-light: #F0DCC8;
+$primary-pale:  #F8EDE2;
+
+$text-primary:  #3D322A;
+$text-secondary:#8A8275;
+$text-muted:    #B5A99A;
+
+$bubble-ai:     $bg-card;
+$bubble-user:   $primary;
+
+$border-soft:   #E8E0D0;
+$shadow-soft:   0 2px 8px rgba(61, 50, 42, 0.05);
+$shadow-bubble: 0 1px 4px rgba(61, 50, 42, 0.06);
+
+$radius:        20px;
+$radius-pill:   30px;
+$font-stack:    -apple-system, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: $bg;
+  background: $bg-main;
   position: relative;
+  font-family: $font-stack;
 }
 
-// ====== 知情同意弹窗 ======
+// ====================================================
+//  顶部栏
+// ====================================================
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: $bg-card;
+  border-bottom: 1px solid $border-soft;
+  flex-shrink: 0;
+}
+
+.chat-header-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: $text-primary;
+  letter-spacing: 0.02em;
+}
+
+.chat-header-end {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: $bg-main;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.end-icon {
+  font-size: 18px;
+  color: $text-muted;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.chat-header-end:active {
+  background: $border-soft;
+}
+
+// ====================================================
+//  知情同意
+// ====================================================
 .consent-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(44, 62, 80, 0.6);
+  background: rgba(61, 50, 42, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -372,26 +427,42 @@ $text-muted: #aab7b7;
 }
 
 .consent-dialog {
-  width: calc(100% - 48px);
+  width: calc(100% - 56px);
   max-width: 320px;
-  background: #fff;
-  border-radius: 24px;
-  padding: 32px 24px 24px;
+  background: $bg-card;
+  border-radius: 28px;
+  padding: 36px 28px 28px;
   text-align: center;
+  animation: fadeUp 0.35s ease;
 }
 
-.consent-icon {
-  font-size: 36px;
-  margin-bottom: 12px;
-  display: block;
+.consent-top {
+  margin-bottom: 16px;
+}
+
+.consent-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: $primary-pale;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.consent-icon-symbol {
+  font-size: 24px;
+  color: $primary;
 }
 
 .consent-title {
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 700;
   color: $text-primary;
   display: block;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  letter-spacing: 0.02em;
 }
 
 .consent-items {
@@ -400,30 +471,45 @@ $text-muted: #aab7b7;
 }
 
 .consent-item {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+
+.consent-dot {
+  font-size: 14px;
+  color: $primary;
+  line-height: 1.6;
+  flex-shrink: 0;
+}
+
+.consent-text {
   font-size: 13px;
   color: $text-secondary;
-  line-height: 1.8;
-  padding-left: 4px;
+  line-height: 1.6;
 }
 
 .consent-btn {
   width: 100%;
-  height: 46px;
-  line-height: 46px;
+  height: 48px;
+  line-height: 48px;
   background: $primary;
   color: #fff;
-  border-radius: 23px;
+  border-radius: $radius-pill;
   font-size: 15px;
   font-weight: 600;
   border: none;
+  letter-spacing: 0.03em;
 }
 
 .consent-btn:active {
   opacity: 0.85;
 }
 
-// ====== 聊天区域 ======
+// ====================================================
+//  聊天区域
+// ====================================================
 .chat-area {
   flex: 1;
   overflow-y: auto;
@@ -431,12 +517,12 @@ $text-muted: #aab7b7;
 }
 
 .chat-inner {
-  padding: 16px 16px 8px;
+  padding: 20px 16px 8px;
 }
 
 .msg-row {
   display: flex;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   align-items: flex-start;
 }
 
@@ -449,26 +535,26 @@ $text-muted: #aab7b7;
 }
 
 .msg-avatar {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .msg-row.assistant .msg-avatar {
   background: $primary-light;
-  color: $primary;
+  color: $primary-dark;
   margin-right: 10px;
 }
 
-.user-avatar-icon {
-  background: #dce8e4;
-  color: $primary;
+.user-av {
+  background: $primary-light;
+  color: $primary-dark;
   margin-left: 10px;
 }
 
@@ -483,24 +569,25 @@ $text-muted: #aab7b7;
 }
 
 .bubble {
-  padding: 12px 16px;
+  padding: 12px 18px;
   border-radius: 18px;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.65;
   word-break: break-word;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .bubble.assistant {
-  background: $bubble-assistant;
+  background: $bubble-ai;
   color: $text-primary;
   border-bottom-left-radius: 4px;
+  box-shadow: $shadow-bubble;
 }
 
 .bubble.user {
   background: $bubble-user;
   color: #fff;
   border-bottom-right-radius: 4px;
+  box-shadow: $shadow-bubble;
 }
 
 .bubble-text {
@@ -514,28 +601,30 @@ $text-muted: #aab7b7;
   padding: 0 4px;
 }
 
-.msg-row.system .bubble {
-  background: #fdf6ec;
-  color: #c0822e;
-  font-size: 13px;
+//  系统消息
+.sys-bubble {
+  background: #FBF5E8;
+  color: #A0853A;
+  font-size: 12px;
   text-align: center;
-  max-width: 85%;
+  max-width: 80%;
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 8px 14px;
+  line-height: 1.5;
 }
 
-// ====== 思考动画 ======
-.thinking-bubble {
+//  思考动画
+.think-bubble {
   padding: 14px 18px;
 }
 
-.thinking-dots {
+.think-dots {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-.dot {
+.tdot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -543,117 +632,124 @@ $text-muted: #aab7b7;
   animation: bounce 1.4s infinite ease-in-out both;
 }
 
-.dot:nth-child(1) { animation-delay: -0.32s; }
-.dot:nth-child(2) { animation-delay: -0.16s; }
-.dot:nth-child(3) { animation-delay: 0s; }
+.tdot:nth-child(1) { animation-delay: -0.32s; }
+.tdot:nth-child(2) { animation-delay: -0.16s; }
+.tdot:nth-child(3) { animation-delay: 0s; }
 
 @keyframes bounce {
   0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
   40% { transform: scale(1); opacity: 1; }
 }
 
-// ====== 免责 ======
+//  免责
 .disclaimer {
-  padding: 10px 16px 16px;
+  padding: 8px 16px 16px;
   text-align: center;
 }
 
 .disclaimer text {
   font-size: 10px;
-  color: #c0c4cc;
+  color: $text-muted;
   line-height: 1.5;
 }
 
-// ====== 顶部栏 ======
-.chat-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  background: #fff;
-  border-bottom: 1px solid #e8e8e8;
-  flex-shrink: 0;
-}
-
-.chat-header-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: $text-primary;
-}
-
-.chat-header-end {
-  font-size: 18px;
-  cursor: pointer;
-  padding: 4px;
-  line-height: 1;
-}
-
-// ====== 输入区域 ======
+// ====================================================
+//  输入区域
+// ====================================================
 .input-area {
   display: flex;
   align-items: center;
-  padding: 10px 12px;
+  padding: 10px 14px;
   padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  background: #fff;
-  border-top: 1px solid #e8e8e8;
+  background: $bg-card;
+  border-top: 1px solid $border-soft;
 }
 
 .input-box {
   flex: 1;
   max-height: 150px;
-  min-height: 40px;
-  padding: 10px 14px;
+  min-height: 42px;
+  padding: 11px 16px;
   font-size: 15px;
   border: none;
-  border-radius: 20px;
-  background: #f0f0f0;
+  border-radius: $radius-pill;
+  background: $bg-main;
   outline: none;
   overflow-y: auto;
   line-height: 1.4;
   resize: none;
+  color: $text-primary;
+}
+
+.input-box::placeholder {
+  color: $text-muted;
 }
 
 .send-btn {
   margin-left: 8px;
-  height: 38px;
-  line-height: 38px;
-  border-radius: 19px;
-  font-size: 14px;
-  padding: 0 18px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   border: none;
-  background: #d0d5d5;
+  background: $border-soft;
   color: #fff;
-  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 1;
 }
 
-.send-btn.active {
+.send-btn-active {
   background: $primary;
+  box-shadow: 0 2px 8px rgba($primary, 0.3);
 }
 
-.send-btn:active {
-  transform: scale(0.95);
+.send-btn:active:not([disabled]) {
+  transform: scale(0.9);
 }
 
 .send-btn[disabled] {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
-// ====== 结束面板 ======
+.send-arrow {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+// ====================================================
+//  结束面板
+// ====================================================
 .ended-panel {
-  padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
-  background: #fff;
-  border-top: 1px solid #e8e8e8;
+  padding: 24px 20px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  background: $bg-card;
+  border-top: 1px solid $border-soft;
 }
 
 .ended-header {
   text-align: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.ended-icon {
-  font-size: 32px;
-  display: block;
-  margin-bottom: 8px;
+.ended-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: $primary-pale;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+
+.ended-icon-symbol {
+  font-size: 22px;
+  color: $primary;
 }
 
 .ended-title {
@@ -661,6 +757,7 @@ $text-muted: #aab7b7;
   font-weight: 700;
   color: $text-primary;
   display: block;
+  letter-spacing: 0.02em;
 }
 
 .ended-reason {
@@ -670,38 +767,38 @@ $text-muted: #aab7b7;
   margin-top: 4px;
 }
 
-.summary-card {
-  background: $primary-light;
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
 .booking-hint {
   margin-bottom: 16px;
   padding: 10px 14px;
-  background: #fdf6ec;
-  border-radius: 10px;
+  background: #FBF5E8;
+  border-radius: 12px;
 }
 
 .booking-hint-text {
   font-size: 12px;
-  color: #c0822e;
+  color: #A0853A;
   line-height: 1.5;
   display: block;
 }
 
-.summary-label {
-  font-size: 12px;
+.summary-card {
+  background: $primary-pale;
+  border-radius: $radius;
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.summary-caption {
+  font-size: 11px;
   font-weight: 600;
   color: $primary;
   display: block;
   margin-bottom: 8px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
-.summary-text {
+.summary-main {
   font-size: 14px;
   color: $text-primary;
   line-height: 1.7;
@@ -714,33 +811,45 @@ $text-muted: #aab7b7;
   gap: 10px;
 }
 
-.action-btn {
+.act-btn {
   flex: 1;
-  height: 44px;
-  line-height: 44px;
-  border-radius: 22px;
+  height: 46px;
+  line-height: 46px;
+  border-radius: $radius-pill;
   font-size: 15px;
   font-weight: 600;
   text-align: center;
   border: none;
+  letter-spacing: 0.02em;
 }
 
-.action-btn.primary {
+.act-primary {
   background: $primary;
   color: #fff;
 }
 
-.action-btn.primary:active {
+.act-primary:active {
   opacity: 0.85;
 }
 
-.action-btn.outline {
+.act-outline {
   background: #fff;
   color: $primary;
   border: 1.5px solid $primary;
 }
 
-.action-btn.outline:active {
-  background: $primary-light;
+.act-outline:active {
+  background: $primary-pale;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

@@ -1,44 +1,53 @@
 <template>
   <view class="page">
-    <view class="header">
-      <text class="page-title">选择咨询师</text>
-      <text class="page-desc">请选择你希望预约的咨询师</text>
+    <view class="page-header">
+      <text class="page-back" @click="uni.navigateBack">&larr;</text>
+      <view class="page-header-body">
+        <text class="page-title">选择咨询师</text>
+        <text class="page-subtitle">请选择你希望预约的咨询师</text>
+      </view>
     </view>
 
     <!-- 前置条件检查 -->
     <view v-if="prereqChecked && !prereqReady" class="prereq-bar">
-      <text class="prereq-icon">📝</text>
-      <view class="prereq-info">
-        <text class="prereq-title">预约前需先完成心理测评</text>
+      <view class="prereq-dot"></view>
+      <view class="prereq-body">
+        <text class="prereq-title">完成测评后再预约</text>
         <text class="prereq-desc">请先完成 GAD-7 和 PHQ-9 量表评估</text>
       </view>
-      <text class="prereq-arrow" @click="goAssessment">去测评 ›</text>
+      <text class="prereq-link" @click="goAssessment">去完成</text>
     </view>
 
-    <view v-if="loading" class="loading">
-      <text class="loading-text">加载中...</text>
+    <view v-if="loading" class="loading-state">
+      <view class="loading-ring"></view>
+      <text class="loading-label">加载中...</text>
     </view>
 
-    <view v-else-if="counselors.length === 0" class="empty">
-      <text class="empty-icon">👩‍⚕️</text>
-      <text class="empty-text">暂无可预约的咨询师</text>
-    </view>
-
-    <view
-      v-for="c in counselors"
-      :key="c.id"
-      class="card"
-      @click="selectCounselor(c)"
-    >
-      <view class="card-avatar" :style="{ background: avatarColor(c.display_name) }">
-        <text class="card-avatar-text">{{ c.display_name.charAt(0) }}</text>
+    <view v-else-if="counselors.length === 0" class="empty-state">
+      <view class="empty-icon-wrap">
+        <text class="empty-icon-symbol">&hearts;</text>
       </view>
-      <view class="card-body">
-        <text class="card-name">{{ c.display_name }}</text>
-        <text v-if="c.specialties" class="card-tags">{{ c.specialties }}</text>
-        <text v-if="c.bio" class="card-bio">{{ c.bio }}</text>
+      <text class="empty-title">暂无可预约的咨询师</text>
+      <text class="empty-desc">请稍后再来查看</text>
+    </view>
+
+    <view class="counselor-list">
+      <view
+        v-for="c in counselors"
+        :key="c.id"
+        class="counselor-card"
+        @click="selectCounselor(c)"
+      >
+        <view class="card-avatar" :style="{ background: avatarColor(c.display_name) }">
+          <text class="card-avatar-text">{{ c.display_name.charAt(0) }}</text>
+        </view>
+        <view class="card-main">
+          <text class="card-name">{{ c.display_name }}</text>
+          <text v-if="c.specialties" class="card-tags">{{ c.specialties }}</text>
+          <text v-if="c.bio" class="card-bio">{{ c.bio }}</text>
+        </view>
+        <text class="card-arrow">&rsaquo;</text>
       </view>
-      <text class="card-arrow">›</text>
     </view>
   </view>
 </template>
@@ -52,7 +61,7 @@ const loading = ref(true);
 const prereqChecked = ref(false);
 const prereqReady = ref(false);
 
-const avatarColors = ["#5b8c7e", "#c97b63", "#6b9ac4", "#b88cb0", "#d4a56a"];
+const avatarColors = ["#D4956A", "#A6A08C", "#90A8B0", "#B89A9A", "#C4A87A"];
 
 function avatarColor(name: string) {
   return avatarColors[name.charCodeAt(0) % avatarColors.length];
@@ -97,21 +106,56 @@ function goAssessment() {
 </script>
 
 <style lang="scss" scoped>
-$bg: #f5f3ef;
-$card-bg: #ffffff;
-$primary: #5b8c7e;
-$text-primary: #2c3e50;
-$text-secondary: #7a8a8a;
-$text-muted: #aab7b7;
+// ====================================================
+//  Warm Amber - 咨询师选择
+// ====================================================
+$bg-main:       #FDF8F4;
+$bg-card:       #FFFFFF;
+$primary:       #D4956A;
+$primary-dark:  #B87A52;
+$primary-light: #F0DCC8;
+$primary-pale:  #F8EDE2;
+
+$text-primary:  #3D322A;
+$text-secondary:#8A8275;
+$text-muted:    #B5A99A;
+
+$border-soft:   #E8E0D0;
+$shadow-card:   0 2px 12px rgba(61, 50, 42, 0.05);
+
+$radius-card:   20px;
+$radius-item:   16px;
+$font-stack:    -apple-system, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 
 .page {
-  padding: 16px;
   min-height: 100vh;
-  background: $bg;
+  background: $bg-main;
+  padding: 0 20px 20px;
+  font-family: $font-stack;
 }
 
-.header {
-  margin-bottom: 16px;
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0 16px;
+}
+
+.page-back {
+  font-size: 24px;
+  color: $text-primary;
+  padding: 4px;
+  cursor: pointer;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.page-back:active {
+  opacity: 0.6;
+}
+
+.page-header-body {
+  flex: 1;
 }
 
 .page-title {
@@ -119,102 +163,158 @@ $text-muted: #aab7b7;
   font-weight: 700;
   color: $text-primary;
   display: block;
+  letter-spacing: 0.01em;
 }
 
-.page-desc {
+.page-subtitle {
   font-size: 13px;
   color: $text-secondary;
   display: block;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
+//  前置条件
 .prereq-bar {
   display: flex;
   align-items: center;
-  background: #fff8e6;
-  border: 1px solid #f0d78c;
-  border-radius: 12px;
-  padding: 12px 14px;
+  gap: 12px;
+  background: #FBF5E8;
+  border: 1px solid #E8DCC8;
+  border-radius: $radius-item;
+  padding: 14px 16px;
   margin-bottom: 16px;
 }
 
-.prereq-icon {
-  font-size: 24px;
-  margin-right: 10px;
+.prereq-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #D4A76A;
+  flex-shrink: 0;
 }
 
-.prereq-info {
+.prereq-body {
   flex: 1;
 }
 
 .prereq-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: #b8860b;
+  color: #A0853A;
   display: block;
+  margin-bottom: 2px;
 }
 
 .prereq-desc {
   font-size: 12px;
-  color: #a0853a;
+  color: #B8A06A;
   display: block;
-  margin-top: 2px;
+  line-height: 1.4;
 }
 
-.prereq-arrow {
+.prereq-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #D4A76A;
+  padding: 6px 16px;
+  border-radius: 30px;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.prereq-link:active {
+  opacity: 0.85;
+}
+
+//  空状态
+.loading-state {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.loading-ring {
+  width: 32px;
+  height: 32px;
+  border: 3px solid $border-soft;
+  border-top-color: $primary;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+.loading-label {
   font-size: 13px;
-  color: #b8860b;
-  font-weight: 500;
-}
-
-.loading {
-  text-align: center;
-  padding: 60px 0;
-}
-
-.loading-text {
-  font-size: 14px;
   color: $text-muted;
 }
 
-.empty {
+.empty-state {
   text-align: center;
-  padding: 60px 0;
+  padding: 80px 0;
 }
 
-.empty-icon {
-  font-size: 40px;
-  display: block;
-  margin-bottom: 10px;
-}
-
-.empty-text {
-  font-size: 14px;
-  color: $text-muted;
-}
-
-.card {
-  display: flex;
-  align-items: center;
-  background: $card-bg;
-  padding: 16px;
-  border-radius: 16px;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
-}
-
-.card:active {
-  transform: scale(0.98);
-}
-
-.card-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+.empty-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: $primary-pale;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 14px;
+  margin: 0 auto 14px;
+}
+
+.empty-icon-symbol {
+  font-size: 22px;
+  color: $primary;
+}
+
+.empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: $text-primary;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.empty-desc {
+  font-size: 13px;
+  color: $text-muted;
+  display: block;
+}
+
+//  咨询师卡片
+.counselor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.counselor-card {
+  display: flex;
+  align-items: center;
+  background: $bg-card;
+  padding: 18px;
+  border-radius: $radius-card;
+  box-shadow: $shadow-card;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.counselor-card:active {
+  transform: scale(0.98);
+  border-color: $primary-light;
+}
+
+.card-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
   flex-shrink: 0;
 }
 
@@ -224,7 +324,7 @@ $text-muted: #aab7b7;
   font-weight: 700;
 }
 
-.card-body {
+.card-main {
   flex: 1;
 }
 
@@ -233,26 +333,32 @@ $text-muted: #aab7b7;
   font-weight: 600;
   color: $text-primary;
   display: block;
+  margin-bottom: 4px;
 }
 
 .card-tags {
   font-size: 12px;
   color: $primary;
   display: block;
-  margin-top: 4px;
+  margin-bottom: 3px;
+  font-weight: 500;
 }
 
 .card-bio {
   font-size: 12px;
   color: $text-secondary;
   display: block;
-  margin-top: 2px;
   line-height: 1.4;
 }
 
 .card-arrow {
-  font-size: 22px;
-  color: #d0d5d5;
+  font-size: 24px;
+  color: $text-muted;
   margin-left: 8px;
+  font-weight: 300;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>
